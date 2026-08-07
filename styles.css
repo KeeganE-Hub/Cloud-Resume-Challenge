@@ -1,0 +1,598 @@
+/* Keegan Elgin's resume site
+   Dark theme by default with a light mode you can switch to (button is
+   in the top right of the nav bar). Accent color is AWS's actual orange
+   since this whole project is an AWS thing - felt more fitting than
+   picking a random color. */
+
+/* ---- dark mode colors (the default) ---- */
+:root {
+  --bg: #0d1420;
+  --bg-card: #17202f;
+  --bg-card-hover: #10161f; /* a touch darker than --bg-card, used when you hover over skill tags / cert cards */
+  --text: #e7ecf5;
+  --text-muted: #8f9bb3;
+  --text-faint: #5b6479;
+  --accent: #ff9900;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --green: #4ade80;
+
+  /* Headings used to be Space Grotesk, but the lowercase "g" looked
+     off in my name, so this is Manrope instead. If this one doesn't
+     look right either, other fonts worth trying: 'Sora', 'Plus Jakarta
+     Sans', or 'Fraunces' (that last one's a serif, more of a different
+     look). Just change the name here AND in the Google Fonts link up
+     in index.html's <head>, or it won't actually load. */
+  --heading-font: 'Manrope', sans-serif;
+  --body-font: 'IBM Plex Sans', sans-serif;
+  --mono-font: 'IBM Plex Mono', monospace;
+
+  --page-width: 880px;
+}
+
+/* ---- light mode colors - kicks in when the toggle button sets
+   data-theme="light" on the <html> tag. Using actual greys here
+   instead of near-white - felt too bright / stark against the dark
+   theme otherwise. ---- */
+:root[data-theme="light"] {
+  --bg: #dde1e6;
+  --bg-card: #eceef1;
+  --bg-card-hover: #cfd4da;
+  --text: #1a1f2b;
+  --text-muted: #5c6478;
+  --text-faint: #9198a8;
+  --accent: #d97c00;
+  --border-color: rgba(0, 0, 0, 0.12);
+  --green: #16a34a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Whenever the light/dark toggle is clicked, script.js sticks this
+   class on the <html> tag for a few seconds. While it's there, every
+   color-related property eases into its new value instead of
+   snapping instantly - makes flipping the theme feel a lot less
+   jarring. It gets removed again after the animation finishes so
+   normal hover effects (see .tag-list li / .cert-card below) stay
+   quick and responsive the rest of the time. */
+.theme-transitioning * {
+  transition: background-color 3s ease, color 3s ease, border-color 3s ease, fill 3s ease !important;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--body-font);
+  line-height: 1.6;
+}
+
+/* lets keyboard users jump past the nav bar straight to the content */
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  background-color: var(--accent);
+  color: #1a1200;
+  padding: 8px 16px;
+}
+
+.skip-link:focus {
+  left: 16px;
+  top: 16px;
+}
+
+a {
+  color: inherit;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------------- top nav bar ---------------- */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid var(--border-color);
+  /* slightly see-through + blurred so it doesn't feel like a solid
+     bar sitting on top of the page when you scroll */
+  background-color: rgba(13, 20, 32, 0.9);
+  backdrop-filter: blur(6px);
+}
+
+:root[data-theme="light"] .topbar {
+  background-color: rgba(221, 225, 230, 0.9);
+}
+
+.topbar-inner {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.topbar-name {
+  font-family: var(--heading-font);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.topbar-nav {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.topbar-nav a {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-family: var(--mono-font);
+  transition: color 0.15s ease;
+}
+
+.topbar-nav a:hover {
+  color: var(--accent);
+}
+
+/* the little sun/moon button */
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.theme-toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.theme-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* only one of the two icons shows at a time - script.js toggles this
+   by adding/removing the "light" attribute up on <html> */
+.moon-icon {
+  display: none;
+}
+
+:root[data-theme="light"] .sun-icon {
+  display: none;
+}
+
+:root[data-theme="light"] .moon-icon {
+  display: block;
+}
+
+/* ---------------- intro / hero section ---------------- */
+
+.hero {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: 72px 24px 40px;
+}
+
+.eyebrow,
+.section-eyebrow {
+  font-family: var(--mono-font);
+  font-size: 13px;
+  color: var(--accent);
+  margin: 0 0 10px;
+}
+
+.hero h1 {
+  font-family: var(--heading-font);
+  font-size: clamp(36px, 6vw, 52px);
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.hero-sub {
+  font-size: 17px;
+  color: var(--text-muted);
+  margin: 0 0 20px;
+}
+
+.hero-about {
+  max-width: 60ch;
+  font-size: 15.5px;
+  margin: 0 0 28px;
+}
+
+.hero-contact {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  font-size: 14px;
+}
+
+.hero-contact li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.hero-contact a {
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.hero-contact a:hover {
+  color: var(--accent);
+}
+
+.icon {
+  width: 15px;
+  height: 15px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* the github/linkedin logos are plain <img> tags for now (pulled from
+   a public CDN) instead of hand-drawn SVGs - sized to match the other
+   icons so everything lines up */
+.icon-img {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.visitor-counter {
+  font-family: var(--mono-font);
+  font-size: 12.5px;
+  color: var(--text-faint);
+  margin: 0;
+}
+
+/* ---------------- main content + sidebar ---------------- */
+
+/* Everything below the hero splits into two columns: the "real"
+   resume stuff (education/experience/projects) on the left, and
+   certifications/skills over on the right - basically the same
+   layout as my PDF resume, just restyled to match the rest of the
+   site. Collapses to a single column near the bottom of this file
+   for narrow screens. */
+
+.content-grid {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: 44px 24px;
+  border-top: 1px solid var(--border-color);
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 48px;
+  align-items: start;
+}
+
+/* the sidebar used to stick in place while scrolling, but that caused
+   it to overlap the top nav bar - so it's just a normal column now,
+   scrolls along with everything else like the left side does */
+
+/* adds a divider line between stacked sections within the same
+   column (e.g. between Certifications and Skills), but not before
+   the first one */
+.main-col > .subsection + .subsection,
+.side-col > .subsection + .subsection {
+  margin-top: 44px;
+  padding-top: 44px;
+  border-top: 1px solid var(--border-color);
+}
+
+.subsection h2 {
+  font-family: var(--heading-font);
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 28px;
+}
+
+/* the sidebar is narrower than the main column, so force these grids
+   down to one column instead of letting them try to fit two */
+.side-col .cert-grid,
+.side-col .skills-grid {
+  grid-template-columns: 1fr;
+}
+
+/* ---------------- skills ---------------- */
+
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 28px;
+}
+
+.skill-group h3 {
+  font-family: var(--mono-font);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin: 0 0 12px;
+}
+
+.tag-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-list li {
+  font-family: var(--mono-font);
+  font-size: 12.5px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  padding: 5px 10px;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.tag-list li:hover {
+  /* OPTION 1 (this is the one that's active): background gets a
+     bit darker and the border switches to the accent orange */
+  background-color: var(--bg-card-hover);
+  border-color: var(--accent);
+}
+
+/* OPTION 2: leave the background alone, just make the text and
+   border orange. To use this one, comment out the Option 1 block
+   above and uncomment this one instead.
+.tag-list li:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+*/
+
+/* OPTION 3: darker background like Option 1, plus the tag nudges
+   up slightly, like it's a tiny button being pressed
+.tag-list li:hover {
+  background-color: var(--bg-card-hover);
+  transform: translateY(-1px);
+}
+*/
+
+/* ---------------- certifications ---------------- */
+
+.cert-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 14px;
+}
+
+.cert-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  padding: 14px 16px;
+  transition: background-color 0.15s ease;
+}
+
+.cert-card:hover {
+  /* OPTION 1 (active): same darker-background treatment as the skill tags above */
+  background-color: var(--bg-card-hover);
+}
+
+/* OPTION 2: darker background AND a small lift, so it feels a
+   little more like a clickable card
+.cert-card:hover {
+  background-color: var(--bg-card-hover);
+  transform: translateY(-2px);
+}
+(if you use this one, also add "transform 0.15s ease" to the
+transition line on .cert-card above)
+*/
+
+/* OPTION 3: skip the background change, just brighten the orange
+   stripe on the left edge
+.cert-card:hover {
+  border-left-color: #ffb84d;
+}
+*/
+
+.cert-name {
+  font-weight: 500;
+  font-size: 14.5px;
+  margin: 0 0 4px;
+}
+
+.cert-date {
+  font-family: var(--mono-font);
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ---------------- experience / projects / education entries ---------------- */
+
+.entry {
+  margin-bottom: 30px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.entry:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.entry-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-bottom: 10px;
+}
+
+.entry-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.entry-org {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+/* the little colored date pills - meant to look like AWS console
+   status badges (running / stopped) since it's a cloud resume after all */
+.status-pill {
+  font-family: var(--mono-font);
+  font-size: 11.5px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-pill::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+.status-running {
+  background-color: rgba(74, 222, 128, 0.12);
+  color: var(--green);
+}
+
+.status-stopped {
+  background-color: rgba(139, 148, 171, 0.12);
+  color: var(--text-faint);
+}
+
+.status-done {
+  background-color: rgba(255, 153, 0, 0.12);
+  color: var(--accent);
+}
+
+.bullets {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.bullets li {
+  font-size: 14.5px;
+  margin-bottom: 6px;
+}
+
+.bullets li:last-child {
+  margin-bottom: 0;
+}
+
+/* ---------------- footer ---------------- */
+
+.footer {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: 0 24px 64px;
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.footer-line {
+  font-family: var(--heading-font);
+  font-size: 22px;
+  font-weight: 600;
+  margin: 48px 0 18px;
+}
+
+.footer-contact {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  font-size: 14px;
+}
+
+.footer-contact a {
+  text-decoration: none;
+  color: var(--accent);
+}
+
+.footer-contact a:hover {
+  text-decoration: underline;
+}
+
+.footer-meta {
+  font-family: var(--mono-font);
+  font-size: 12px;
+  color: var(--text-faint);
+  margin: 0;
+}
+
+/* ---------------- small screens ---------------- */
+
+@media (max-width: 860px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .topbar-inner {
+    padding: 14px 20px;
+  }
+
+  .hero {
+    padding: 48px 20px 32px;
+  }
+
+  .content-grid {
+    padding: 32px 20px;
+  }
+
+  .entry-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* respect people who've told their OS they don't want animations */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .theme-transitioning * {
+    transition: none !important;
+  }
+}
