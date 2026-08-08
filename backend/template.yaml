@@ -1,0 +1,266 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Cloud Resume Challenge backend - transitional version with BOTH the
+  original REST counter (Part 3) and the new real-time WebSocket
+  counter (Part 8) deployed side by side. This lets the live site
+  keep working off the REST endpoint while the WebSocket path is
+  still being set up and tested. Once you've confirmed the WebSocket
+  version works end-to-end, the REST section below can be deleted
+  (see the comment above VisitorCountFunction).
+
+  How the WebSocket path fits together:
+    1. A visitor's browser opens a WebSocket connection -> API Gateway
+       runs the $connect route -> DBUpdater saves their connection ID
+       and bumps the count in VisitorCountTable.
+    2. That write to VisitorCountTable is picked up by a DynamoDB
+       Stream, which triggers DBStreamProcessor.
+    3. DBStreamProcessor looks up every currently-open connection ID
+       and pushes the new count out to all of them over the socket.
+    4. When a visitor closes the tab, $disconnect fires and DBUpdater
+       just removes their connection ID - it does NOT decrement the
+       count, since someone leaving isn't "undoing" their visit.
+
+Globals:
+  Function:
+    Timeout: 5
+    MemorySize: 128
+    Runtime: python3.14
+
+Resources:
+
+  # ---------------------------------------------------------------
+  # DynamoDB tables
+  # ---------------------------------------------------------------
+
+  VisitorCountTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: resume-visitor-count
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      # this is the new part - turning Streams on means every write to
+      # this table gets recorded as an event that something else (in
+      # our case, DBStreamProcessor below) can react to
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+
+  ConnectionIdsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: resume-connection-ids
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: connectionId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: connectionId
+          KeyType: HASH
+      # if a browser's $disconnect event never actually fires (closed
+      # laptop lid, lost wifi, crashed tab - it happens), this makes
+      # DynamoDB automatically delete the leftover row after the ttl
+      # timestamp passes, instead of it sitting there forever
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  # ---------------------------------------------------------------
+  # REST API (Part 3) - kept alongside the WebSocket version below
+  # on purpose, so the live counter keeps working while the
+  # WebSocket setup is still in progress. Both write to the same
+  # VisitorCountTable, so the count stays consistent either way.
+  # Safe to delete this whole section (and app.py) once you've
+  # confirmed the WebSocket version works end-to-end.
+  # ---------------------------------------------------------------
+
+  VisitorCountFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: resume-visitor-count-fn
+      Handler: app.lambda_handler
+      CodeUri: src/
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref VisitorCountTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref VisitorCountTable
+      Events:
+        GetCount:
+          Type: Api
+          Properties:
+            RestApiId: !Ref VisitorCountApi
+            Path: /count
+            Method: GET
+        Preflight:
+          Type: Api
+          Properties:
+            RestApiId: !Ref VisitorCountApi
+            Path: /count
+            Method: OPTIONS
+
+  VisitorCountApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: resume-visitor-count-api
+      StageName: prod
+      # No Cors property here on purpose - the Lambda itself already
+      # handles the OPTIONS preflight request and returns the CORS
+      # headers (see CORS_HEADERS in app.py). Setting Cors here too
+      # would make SAM try to create its own OPTIONS handling on top
+      # of that, which collides with the "Preflight" event above and
+      # breaks the deploy.
+
+  # ---------------------------------------------------------------
+  # Lambda functions (WebSocket version - Part 8)
+  # ---------------------------------------------------------------
+
+  DBUpdaterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: resume-connection-handler-fn
+      Handler: dbupdater.lambda_handler
+      CodeUri: src/
+      Environment:
+        Variables:
+          VISITOR_TABLE_NAME: !Ref VisitorCountTable
+          CONNECTIONS_TABLE_NAME: !Ref ConnectionIdsTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref VisitorCountTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ConnectionIdsTable
+
+  DBStreamProcessorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: resume-stream-processor-fn
+      Handler: dbstreamprocessor.lambda_handler
+      CodeUri: src/
+      Environment:
+        Variables:
+          CONNECTIONS_TABLE_NAME: !Ref ConnectionIdsTable
+          # this is how the function knows where to actually send
+          # messages back to - it's not something SAM can fill in
+          # automatically, since the WebSocket API is a separate
+          # resource defined further down this file
+          WEBSOCKET_ENDPOINT: !Sub "https://${WebSocketApi}.execute-api.${AWS::Region}.amazonaws.com/prod"
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ConnectionIdsTable
+        # this is the permission that actually lets the function push
+        # a message down an open websocket connection - it's a
+        # different kind of permission than normal Lambda/DynamoDB
+        # stuff, so there's no SAM policy template for it
+        - Statement:
+            - Effect: Allow
+              Action: execute-api:ManageConnections
+              Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketApi}/prod/POST/@connections/*"
+      # this is what actually wires the DynamoDB Stream up to this
+      # function - SAM handles all the "give this function permission
+      # to read the stream" IAM work automatically for this event type
+      Events:
+        VisitorCountStream:
+          Type: DynamoDB
+          Properties:
+            Stream: !GetAtt VisitorCountTable.StreamArn
+            StartingPosition: LATEST
+            BatchSize: 1
+
+  # ---------------------------------------------------------------
+  # WebSocket API Gateway
+  # ---------------------------------------------------------------
+  # SAM doesn't have a shorthand for WebSocket APIs the way it does
+  # for REST/HTTP ones (that's what "AWS::Serverless::Api" was doing
+  # for the old version) - so these next several resources are plain
+  # CloudFormation instead. It's more verbose, but it's fine to mix
+  # regular CloudFormation resources into a SAM template like this.
+
+  WebSocketApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: resume-visitor-count-websocket
+      ProtocolType: WEBSOCKET
+      # this tells API Gateway how to figure out which route (like
+      # $connect) a given message is for - $connect/$disconnect are
+      # special built-in routes that don't actually use this
+      RouteSelectionExpression: "$request.body.action"
+
+  ConnectIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref WebSocketApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DBUpdaterFunction.Arn}/invocations"
+
+  ConnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref WebSocketApi
+      RouteKey: $connect
+      AuthorizationType: NONE
+      Target: !Sub "integrations/${ConnectIntegration}"
+
+  DisconnectIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref WebSocketApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DBUpdaterFunction.Arn}/invocations"
+
+  DisconnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref WebSocketApi
+      RouteKey: $disconnect
+      AuthorizationType: NONE
+      Target: !Sub "integrations/${DisconnectIntegration}"
+
+  # lets API Gateway actually invoke DBUpdater - without this, the
+  # routes above would be wired up but every connection attempt would
+  # fail with a permissions error
+  WebSocketInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref DBUpdaterFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketApi}/*"
+
+  # a WebSocket API needs to be explicitly "deployed" to a stage
+  # before it's actually reachable, same idea as the REST API's
+  # StageName from before - it just isn't automatic here the way it
+  # was under AWS::Serverless::Api
+  WebSocketDeployment:
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn:
+      - ConnectRoute
+      - DisconnectRoute
+    Properties:
+      ApiId: !Ref WebSocketApi
+
+  WebSocketStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref WebSocketApi
+      DeploymentId: !Ref WebSocketDeployment
+      StageName: prod
+
+Outputs:
+  ApiUrl:
+    Description: "REST endpoint (Part 3) - the one your live site is probably still using right now"
+    Value: !Sub "https://${VisitorCountApi}.execute-api.${AWS::Region}.amazonaws.com/prod/count"
+  WebSocketUrl:
+    Description: "WebSocket endpoint (Part 8) - switch script.js over to this once it's tested and working"
+    Value: !Sub "wss://${WebSocketApi}.execute-api.${AWS::Region}.amazonaws.com/prod"
+  VisitorTableName:
+    Description: "DynamoDB table name for the visitor count"
+    Value: !Ref VisitorCountTable
+  ConnectionsTableName:
+    Description: "DynamoDB table name for tracking open WebSocket connections"
+    Value: !Ref ConnectionIdsTable
