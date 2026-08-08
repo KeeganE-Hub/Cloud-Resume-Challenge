@@ -48,28 +48,70 @@
       <a href="#experience">Experience</a>
       <a href="#projects">Projects</a>
       <a href="#skills">Skills</a>
-      <a href="#contact">Contact</a>
+
+      <!-- Contact used to just be a link down to the footer - now it
+           pops open a little business-card-style panel instead, right
+           where you are on the page. The wrapping div is just so the
+           card can be positioned relative to the button. -->
+      <div class="contact-popover-wrap">
+        <button id="contact-toggle" class="contact-toggle" aria-haspopup="true" aria-expanded="false">
+          Contact
+        </button>
+
+        <div id="contact-card" class="business-card" hidden>
+          <p class="business-card-name">Keegan Elgin</p>
+          <p class="business-card-title">Cloud &amp; Software Developer</p>
+          <div class="business-card-divider"></div>
+          <ul class="business-card-list">
+            <li>
+              <img class="icon-img icon-mono" src="images/location.png" alt="">
+              Vancouver, BC
+            </li>
+            <li>
+              <img class="icon-img icon-mono" src="images/email.png" alt="">
+              <a href="mailto:keeganelgin@gmail.com">keeganelgin@gmail.com</a>
+            </li>
+            <li>
+              <img class="icon-img icon-mono" src="images/phone.png" alt="">
+              <a href="tel:+16047202841">(604) 720-2841</a>
+            </li>
+            <li>
+              <img class="icon-img icon-mono" src="images/github.png" alt="GitHub">
+              <a href="https://github.com/KeeganE-Hub" target="_blank" rel="noopener">github.com/KeeganE-Hub</a>
+            </li>
+            <li>
+              <img class="icon-img" src="images/linkedin.png" alt="LinkedIn">
+              <a href="https://linkedin.com/in/keeganelgin" target="_blank" rel="noopener">linkedin.com/in/keeganelgin</a>
+            </li>
+          </ul>
+        </div>
+      </div>
     </nav>
 
-    <!-- light/dark toggle. The actual switching logic lives in script.js -->
-    <button id="theme-toggle" class="theme-toggle" aria-label="Switch between light and dark mode">
-      <!-- sun icon, shown in dark mode (click to go light) -->
-      <svg class="theme-icon sun-icon" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
-        <line x1="12" y1="2" x2="12" y2="5" stroke="currentColor" stroke-width="1.5"/>
-        <line x1="12" y1="19" x2="12" y2="22" stroke="currentColor" stroke-width="1.5"/>
-        <line x1="2" y1="12" x2="5" y2="12" stroke="currentColor" stroke-width="1.5"/>
-        <line x1="19" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="1.5"/>
-        <line x1="4.9" y1="4.9" x2="7" y2="7" stroke="currentColor" stroke-width="1.5"/>
-        <line x1="17" y1="17" x2="19.1" y2="19.1" stroke="currentColor" stroke-width="1.5"/>
-        <line x1="4.9" y1="19.1" x2="7" y2="17" stroke="currentColor" stroke-width="1.5"/>
-        <line x1="17" y1="7" x2="19.1" y2="4.9" stroke="currentColor" stroke-width="1.5"/>
-      </svg>
-      <!-- moon icon, shown in light mode (click to go dark) -->
-      <svg class="theme-icon moon-icon" viewBox="0 0 24 24">
-        <path d="M20 14.5c-1 0.4-2 0.6-3 0.6-4.4 0-8-3.6-8-8 0-1.3 0.3-2.5 0.8-3.6C6.1 4.6 3.5 8 3.5 12c0 4.7 3.8 8.5 8.5 8.5 3.5 0 6.5-2.1 7.8-5.1-0.3 0.1-0.5 0.1-0.8 0.1z" fill="currentColor"/>
-      </svg>
-    </button>
+    <div class="topbar-actions">
+      <!-- TODO: swap this href for the real repo URL once it's public -->
+      <a class="repo-link-btn" href="#" target="_blank" rel="noopener">View on GitHub</a>
+
+      <!-- light/dark toggle. The actual switching logic lives in script.js -->
+      <button id="theme-toggle" class="theme-toggle" aria-label="Switch between light and dark mode">
+        <!-- sun icon, shown in dark mode (click to go light) -->
+        <svg class="theme-icon sun-icon" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="12" y1="2" x2="12" y2="5" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="12" y1="19" x2="12" y2="22" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="2" y1="12" x2="5" y2="12" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="19" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="4.9" y1="4.9" x2="7" y2="7" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="17" y1="17" x2="19.1" y2="19.1" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="4.9" y1="19.1" x2="7" y2="17" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="17" y1="7" x2="19.1" y2="4.9" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        <!-- moon icon, shown in light mode (click to go dark) -->
+        <svg class="theme-icon moon-icon" viewBox="0 0 24 24">
+          <path d="M20 14.5c-1 0.4-2 0.6-3 0.6-4.4 0-8-3.6-8-8 0-1.3 0.3-2.5 0.8-3.6C6.1 4.6 3.5 8 3.5 12c0 4.7 3.8 8.5 8.5 8.5 3.5 0 6.5-2.1 7.8-5.1-0.3 0.1-0.5 0.1-0.8 0.1z" fill="currentColor"/>
+        </svg>
+      </button>
+    </div>
   </div>
 </header>
 
@@ -77,8 +119,8 @@
 
   <!-- INTRO SECTION -->
   <section class="hero">
-    <p class="eyebrow">Cloud &amp; software developer</p>
     <h1>Keegan Elgin</h1>
+    <p class="eyebrow">Cloud &amp; software developer</p>
     <p class="hero-sub">Building and supporting applications on AWS and Azure — Vancouver, BC</p>
     <p class="hero-about">
       Cloud and software developer with hands-on experience building and supporting
@@ -88,39 +130,23 @@
     <!-- contact info row - icons are just plain shapes, nothing fancy -->
     <ul class="hero-contact">
       <li>
-        <!-- pin: a circle for the head, a v-shape for the point -->
-        <svg class="icon" viewBox="0 0 24 24">
-          <circle cx="12" cy="9" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/>
-          <polyline points="9,13 12,21 15,13" fill="none" stroke="currentColor" stroke-width="1.5"/>
-        </svg>
+        <img class="icon-img icon-mono" src="images/location.png" alt="">
         Vancouver, BC
       </li>
       <li>
-        <!-- envelope: a rectangle with a folded-flap line through the middle -->
-        <svg class="icon" viewBox="0 0 24 24">
-          <rect x="2" y="5" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
-          <polyline points="2,6 12,14 22,6" fill="none" stroke="currentColor" stroke-width="1.5"/>
-        </svg>
+        <img class="icon-img icon-mono" src="images/email.png" alt="">
         <a href="mailto:keeganelgin@gmail.com">keeganelgin@gmail.com</a>
       </li>
       <li>
-        <!-- phone: just a rounded rectangle with a little home-button line -->
-        <svg class="icon" viewBox="0 0 24 24">
-          <rect x="7" y="2" width="10" height="20" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
-          <line x1="10" y1="18" x2="14" y2="18" stroke="currentColor" stroke-width="1.5"/>
-        </svg>
+        <img class="icon-img icon-mono" src="images/phone.png" alt="">
         <a href="tel:+16047202841">(604) 720-2841</a>
       </li>
       <li>
-        <!-- placeholder logo pulled from a public icon CDN for now -
-             once you've got your own image saved in the S3 bucket,
-             just swap the src below to something like "github-logo.png" -->
-        <img class="icon-img" src="https://cdn.simpleicons.org/github/8f9bb3" alt="GitHub">
+        <img class="icon-img icon-mono" src="images/github.png" alt="GitHub">
         <a href="https://github.com/KeeganE-Hub" target="_blank" rel="noopener">github.com/KeeganE-Hub</a>
       </li>
       <li>
-        <!-- same deal - swap this src for your own hosted image later -->
-        <img class="icon-img" src="https://cdn.simpleicons.org/linkedin/8f9bb3" alt="LinkedIn">
+        <img class="icon-img" src="images/linkedin.png" alt="LinkedIn">
         <a href="https://linkedin.com/in/keeganelgin" target="_blank" rel="noopener">linkedin.com/in/keeganelgin</a>
       </li>
     </ul>
@@ -168,6 +194,9 @@
             <li>Designed and built a responsive chatbot using Azure Cognitive Services, integrated with social media platforms (Facebook, Slack).</li>
             <li>Implemented a custom HTML interface.</li>
           </ul>
+          <ul class="tag-list entry-skills">
+            <li>Azure</li><li>Cognitive Services</li><li>HTML</li>
+          </ul>
         </div>
 
         <div class="entry">
@@ -178,6 +207,9 @@
           <ul class="bullets">
             <li>Helped build a web-based audio room app for educators with recording and sharing features.</li>
             <li>Focused on backend development with Node.js and React, optimizing audio compression and subtitle generation with third-party libraries.</li>
+          </ul>
+          <ul class="tag-list entry-skills">
+            <li>Node.js</li><li>React</li>
           </ul>
         </div>
 
@@ -190,6 +222,9 @@
             <li>Designed and implemented a multi-view stock monitoring interface, improving usability and data viewing for traders.</li>
             <li>Built the backend functionality using Python (Django) so that users could quickly pull required information from an Azure database.</li>
           </ul>
+          <ul class="tag-list entry-skills">
+            <li>Python</li><li>Django</li><li>Databases</li><li>Azure</li>
+          </ul>
         </div>
 
         <div class="entry">
@@ -200,6 +235,21 @@
           </div>
           <ul class="bullets">
             <li>Government retail job, providing reliable and accountable customer service in a fast-paced environment.</li>
+          </ul>
+        </div>
+
+        <div class="entry">
+          <div class="entry-head">
+            <p class="entry-title">Discord Server Admin <span class="entry-org">· Community server (26,000+ members)</span></p>
+            <!-- no dates given for this one, so no status pill - same as how the
+                 project entries below don't have one either -->
+          </div>
+          <ul class="bullets">
+            <li>Managed moderation bots and acted as the communication link between the moderation team and the server owner for a community of 26,000+ members.</li>
+            <li>Proactively identified and fixed an issue in the server's ticketing system, significantly improving its effectiveness.</li>
+          </ul>
+          <ul class="tag-list entry-skills">
+            <li>Discord</li><li>Bot Management</li><li>Moderation</li>
           </ul>
         </div>
       </div>
@@ -216,6 +266,9 @@
             <li>Built a Chrome extension enabling text-to-speech playback from any selected text using AWS Polly.</li>
             <li>Set up serverless infrastructure using AWS Lambda, API Gateway, and S3 for scalable audio generation and storage.</li>
           </ul>
+          <ul class="tag-list entry-skills">
+            <li>AWS Polly</li><li>Lambda</li><li>API Gateway</li><li>S3</li>
+          </ul>
         </div>
 
         <div class="entry">
@@ -224,6 +277,22 @@
           </div>
           <ul class="bullets">
             <li>Led development of a searchable store item listing platform, managing workloads, designing the query system, and building features with HTML, CSS, JavaScript, Firebase, and Google Sheets API.</li>
+          </ul>
+          <ul class="tag-list entry-skills">
+            <li>HTML</li><li>CSS</li><li>JavaScript</li><li>Firebase</li><li>Google Sheets API</li>
+          </ul>
+        </div>
+
+        <div class="entry">
+          <div class="entry-head">
+            <p class="entry-title">"Whirled Avatars" <span class="entry-org">· Java Project</span></p>
+          </div>
+          <ul class="bullets">
+            <li>Edited Java source files and bitmap image assets to create custom avatar characters for an online game, which other players could purchase.</li>
+            <li>Built and compiled the project on Linux, using Apache Ant from the command line.</li>
+          </ul>
+          <ul class="tag-list entry-skills">
+            <li>Java</li><li>Ant</li><li>Linux</li>
           </ul>
         </div>
       </div>

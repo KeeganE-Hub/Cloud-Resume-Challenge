@@ -20,6 +20,22 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      # script.js keeps the [YOUR_..._URL] placeholders in the repo -
+      # this step swaps in the real values only on this runner, right
+      # before upload. These are stored as repo VARIABLES rather than
+      # secrets - the API/WebSocket URLs aren't actually sensitive
+      # (they're called directly by every visitor's browser, so
+      # they're public the moment the site is live either way).
+      # Secrets are for things like AWS_ACCESS_KEY_ID below, which
+      # actually do need to stay hidden.
+      - name: Inject backend URLs into script.js
+        env:
+          API_GATEWAY_INVOKE_URL: ${{ vars.API_GATEWAY_INVOKE_URL }}
+          WEBSOCKET_URL: ${{ vars.WEBSOCKET_URL }}
+        run: |
+          sed -i "s|\[YOUR_API_GATEWAY_INVOKE_URL\]|$API_GATEWAY_INVOKE_URL|g" frontend/script.js
+          sed -i "s|\[YOUR_WEBSOCKET_URL\]|$WEBSOCKET_URL|g" frontend/script.js
+
       - name: Sync files to S3
         run: >
           aws s3 sync frontend/ s3://${{ secrets.S3_BUCKET_NAME }}

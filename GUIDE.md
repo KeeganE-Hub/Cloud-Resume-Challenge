@@ -11,14 +11,24 @@ cloud-resume-project/
 ├── frontend/
 │   ├── index.html
 │   ├── styles.css
-│   └── script.js
+│   ├── script.js
+│   └── images/
+│       ├── email.png
+│       ├── github.png
+│       ├── linkedin.png
+│       ├── location.png
+│       └── phone.png
 ├── backend/
 │   ├── template.yaml
 │   ├── src/
-│   │   ├── app.py
+│   │   ├── app.py               (REST handler, Part 3 - kept until Part 8 is done)
+│   │   ├── dbupdater.py         (WebSocket $connect/$disconnect handler)
+│   │   ├── dbstreamprocessor.py (pushes count updates over the socket)
 │   │   └── requirements.txt
 │   └── tests/
-│       └── test_app.py
+│       ├── test_app.py
+│       ├── test_dbupdater.py
+│       └── test_dbstreamprocessor.py
 ├── .github/
 │   └── workflows/
 │       ├── backend-deploy.yml
@@ -26,12 +36,12 @@ cloud-resume-project/
 └── GUIDE.md
 ```
 
-**Two GitHub repos, not one**, per the official challenge spec: one for
-the frontend, one for the backend/infra. You can start in one folder
-locally (as laid out above) and split it into two repos when you get
-to Part 7 — or create two repos from the start and put `frontend/` in
-one and `backend/` + `.github/` in the other. Either works; two repos
-is the traditional/graded structure.
+Note: `app.py` and `test_app.py` are the original REST-based counter
+from Part 3. They're kept in place alongside the Part 8 WebSocket
+files so the live site keeps working throughout — see the cleanup
+note at the end of Part 8 for when/how to remove them.
+
+**One GitHub repo, not two** — the official challenge spec calls for splitting frontend/backend into separate repos, but plenty of people build this as a single repo with `frontend/`/`backend/` folders instead, and it's not treated as a hard requirement in practice. Went with one repo here since it's easier for a hiring manager to review the whole project in one place without hopping between two links.
 
 ---
 
@@ -40,7 +50,7 @@ is the traditional/graded structure.
 - [ ] AWS account (you have this, plus your Cloud Practitioner cert — already on your resume)
 - [ ] AWS CLI installed and configured: `aws configure` (needs an IAM user access key — see below)
 - [ ] [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html) installed
-- [ ] Python 3.12 installed locally
+- [ ] Python 3.14 installed locally
 - [ ] Git + a GitHub account
 - [ ] A code editor (VS Code is fine)
 
@@ -108,6 +118,13 @@ At this point `https://yourdomain.com` should load your resume over HTTPS. ✅ F
 
 ## Part 3 — Backend: DynamoDB + Lambda + API Gateway
 
+> This is the original REST-based counter. If you go on to build the
+> real-time WebSocket version in Part 8, both versions can coexist in
+> the same deploy while you're transitioning — the REST resources
+> here aren't deleted automatically, so the live site keeps working
+> off this one until you've confirmed the WebSocket version works and
+> choose to remove this section as a cleanup step.
+
 All defined as code in `backend/template.yaml` — you won't click these out manually, SAM creates them.
 
 **What's in `template.yaml`:**
@@ -162,27 +179,22 @@ If you want to go further as a portfolio flex later, you could also move the S3/
 
 ---
 
-## Part 6 — Two GitHub repos + CI/CD
+## Part 6 — GitHub repo + CI/CD
 
-**Set up the repos:**
+**Set up the repo:**
 ```bash
-# from inside cloud-resume-project/
-cd frontend
-git init && git add . && git commit -m "Initial resume site"
-git remote add origin https://github.com/yourname/cloud-resume-frontend.git
-git push -u origin main
-
-cd ../backend
-git init && git add . && git commit -m "Initial backend"
-# also move .github/workflows/backend-deploy.yml into this repo's .github/workflows/
-git remote add origin https://github.com/yourname/cloud-resume-backend.git
+# from inside cloud-resume-project/ - this whole folder becomes the repo,
+# frontend/, backend/, and .github/ all stay together
+git init
+git add .
+git commit -m "Initial commit"
+git remote add origin https://github.com/yourname/cloud-resume-project.git
 git push -u origin main
 ```
-Put `frontend-deploy.yml` in the frontend repo's `.github/workflows/`, and `backend-deploy.yml` in the backend repo's `.github/workflows/`.
+Both workflow files (`frontend-deploy.yml` and `backend-deploy.yml`) already live in `.github/workflows/` in this project, so there's nothing to move around — each one is already set up to only trigger on pushes that touch its own folder (`frontend/` or `backend/` respectively), so they won't step on each other.
 
-**Add GitHub Secrets** (each repo → Settings → Secrets and variables → Actions → New repository secret):
+**Add GitHub Secrets** (repo → Settings → Secrets and variables → Actions → New repository secret):
 
-*Frontend repo needs:*
 | Secret | Value |
 |---|---|
 | `AWS_ACCESS_KEY_ID` | from your IAM user |
@@ -190,11 +202,7 @@ Put `frontend-deploy.yml` in the frontend repo's `.github/workflows/`, and `back
 | `S3_BUCKET_NAME` | e.g. `yourname-resume-site` |
 | `CLOUDFRONT_DISTRIBUTION_ID` | from the CloudFront console |
 
-*Backend repo needs:*
-| Secret | Value |
-|---|---|
-| `AWS_ACCESS_KEY_ID` | from your IAM user |
-| `AWS_SECRET_ACCESS_KEY` | from your IAM user |
+Since it's one repo now, both workflows pull from the same set of secrets — no need to duplicate `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` across two separate repos' settings pages like a two-repo setup would require.
 
 **What each workflow does:**
 - `frontend-deploy.yml`: on every push to `main` that touches `frontend/`, syncs the folder to S3 and invalidates CloudFront
@@ -212,6 +220,135 @@ Requirement: a short post describing something you learned. Dev.to or Hashnode a
 
 ---
 
+## Part 8 — Extension: Real-time counter with WebSockets + DynamoDB Streams
+
+This is an optional extension from the official Cloud Resume Challenge
+site, not part of the base challenge. It adds a real-time counter that
+pushes live updates to every open browser tab, instead of only
+updating on refresh — running **alongside** the REST version from
+Part 3 while you're setting it up and testing it, rather than
+replacing it immediately. That way the live site keeps working the
+whole time. Once you've confirmed the WebSocket version works
+end-to-end, you can go back and delete the REST resources as a
+cleanup step (see the note at the end of this section).
+
+### How it works
+
+```
+Visitor's browser
+      │
+      │  opens a WebSocket connection on page load
+      ▼
+WebSocket API Gateway  ──$connect route──▶  DBUpdater (Lambda)
+                                                  │
+                                                  ├─▶ saves connection ID
+                                                  │   to ConnectionIds table
+                                                  │
+                                                  └─▶ increments the count
+                                                      in VisitorCount table
+                                                              │
+                                                   this write triggers a
+                                                   DynamoDB Stream event
+                                                              │
+                                                              ▼
+                                              DBStreamProcessor (Lambda)
+                                                              │
+                                              looks up every open
+                                              connection ID, and pushes
+                                              the new count to each one
+                                                              │
+                                                              ▼
+                                            Every open browser tab updates
+                                            its displayed count, live
+```
+
+When a visitor closes the tab, the `$disconnect` route fires and `DBUpdater` just removes their connection ID — the count itself never decreases.
+
+### What's already built for you
+
+- `backend/template.yaml` — the WebSocket API, `ConnectionIdsTable`, `DBUpdaterFunction`, and `DBStreamProcessorFunction` are added alongside the existing REST resources (not replacing them). DynamoDB Streams is turned on for `VisitorCountTable`, which both the old and new Lambdas share.
+- `backend/src/dbupdater.py` — handles `$connect`/`$disconnect`
+- `backend/src/dbstreamprocessor.py` — reacts to the stream, pushes updates out
+- `backend/tests/test_dbupdater.py` and `test_dbstreamprocessor.py` — new, alongside the existing `test_app.py`
+- `frontend/script.js` — now supports both: it uses the WebSocket path if `WEBSOCKET_URL` is filled in, otherwise falls back to the REST path automatically. Nothing breaks if you deploy this before finishing the WebSocket setup.
+
+### Deploy it
+
+Same commands as before — this is still one SAM stack, just with more resources in it now:
+
+```bash
+cd backend
+sam build
+sam deploy
+```
+
+Since you're updating the *existing* `cloud-resume-backend` stack (not creating a new one), CloudFormation will show you a changeset that adds the new WebSocket resources without touching the REST ones — confirm it same as always.
+
+Grab both URLs from the Outputs section afterward:
+```
+ApiUrl:        https://abcd123456.execute-api.us-east-1.amazonaws.com/prod/count
+WebSocketUrl:  wss://abcd123456.execute-api.us-east-1.amazonaws.com/prod
+```
+
+### Wire it into the frontend
+
+- Open `frontend/script.js`
+- If you'd already filled in a real `API_URL` from Part 3, make sure that value carries over into this version of the file — it's still there and still used as the fallback
+- Leave `WEBSOCKET_URL` as the placeholder for now — the site will keep working off the REST path automatically until you fill this in
+- Re-upload to S3 and invalidate CloudFront, same as always:
+  ```bash
+  aws s3 sync frontend/ s3://yourname-resume-site --delete
+  aws cloudfront create-invalidation --distribution-id YOUR_DIST_ID --paths "/*"
+  ```
+
+At this point, double check the site still works exactly as it did before — it should, since nothing about the REST path changed.
+
+### Once you're ready to actually switch over
+
+- Paste the `WebSocketUrl` value into `WEBSOCKET_URL` in `script.js`, re-upload, invalidate the cache again
+- Test it (see below)
+
+### Test it
+
+Open your live site in **two browser tabs side by side**. Reload one of them — the count in the *other* tab should update on its own, with no refresh needed. That's the real difference from Part 3's version: the update comes from someone else's action, pushed to you live.
+
+### Run the tests
+
+```bash
+pip install pytest boto3 moto
+cd backend
+pytest tests -v
+```
+
+### Costs — this is the one part of the project with genuinely new cost dimensions
+
+| Item | Cost |
+|---|---|
+| WebSocket messages | $1.00 per million, first 1M/month free for your first 12 months |
+| WebSocket connection time | $0.25 per million connection-*minutes* (not messages — every minute a connection stays open counts, even idle) — first 750,000 minutes/month free for 12 months |
+| DynamoDB Streams (via Lambda trigger) | **Free, no matter the volume** — AWS doesn't charge for the `GetRecords` calls Lambda makes to read a stream, unlike a stream read from anywhere else |
+| `ConnectionIdsTable` (DynamoDB on-demand) | Same negligible per-request pricing as the visitor count table |
+| `DBUpdaterFunction` / `DBStreamProcessorFunction` (Lambda) | Same free tier as before — 1M requests + 400,000 GB-seconds/month, indefinitely, not just 12 months |
+
+**Realistically, at personal-site traffic:** if 100 people visit in a month and each keeps the tab open for, say, 2 minutes, that's 200 connection-minutes and maybe a few hundred messages total — nowhere close to either free-tier ceiling. This should cost **$0/month** for the traffic a portfolio resume site gets, same as everything else in this project.
+
+**The one thing actually worth watching:** connection-minutes accumulate for *idle* time too, not just active messaging. If your site ever got shared somewhere and a lot of people left the tab open in the background for hours, that adds up faster than the message count does. Not a real risk at your current traffic, but worth knowing which number to check first if a bill ever looks larger than expected.
+
+### Blog post angle
+
+Since Part 7 already covers the "write a blog post" requirement, this extension gives you a good chunk of extra material for it: the REST-vs-WebSocket tradeoff, why DynamoDB Streams reads are free specifically *because* Lambda is the consumer, or the `GoneException` cleanup pattern for handling connections that vanish without a proper `$disconnect`.
+
+### Cleanup — once you're confident the WebSocket version is solid
+
+Leaving both versions running doesn't cost anything extra beyond a few cents (an idle Lambda and unused API Gateway route don't accrue charges just for existing) — but it's worth tidying up once you're done testing, so the project isn't carrying dead code:
+
+- Delete `backend/src/app.py` and `backend/tests/test_app.py`
+- In `template.yaml`, delete the `VisitorCountFunction` and `VisitorCountApi` resources, and the `ApiUrl` output
+- In `script.js`, delete `API_URL`, `updateVisitorCountViaRest()`, and simplify `initVisitorCounter()` to just call the WebSocket path directly
+- Run `sam deploy` again — the changeset will show the REST resources being removed from AWS
+
+---
+
 ## Checklist (matches the official challenge spec)
 
 - [ ] Resume in HTML, styled with CSS
@@ -220,10 +357,10 @@ Requirement: a short post describing something you learned. Dev.to or Hashnode a
 - [ ] Custom domain via Route 53
 - [ ] JS-based visitor counter
 - [ ] Counter data stored in DynamoDB
-- [ ] Counter served via API Gateway + Lambda (Python/boto3)
+- [ ] Counter served via API Gateway + Lambda (Python/boto3) — REST version in Part 3, or WebSocket + DynamoDB Streams version in Part 8
 - [ ] Unit tests for the Lambda code
 - [ ] Infrastructure as Code (SAM/CloudFormation) for the backend
-- [ ] Two GitHub repos with CI/CD (GitHub Actions) — frontend auto-deploys to S3+CloudFront, backend auto-tests and auto-deploys
+- [ ] One GitHub repo with CI/CD (GitHub Actions) — frontend auto-deploys to S3+CloudFront, backend auto-tests and auto-deploys
 - [ ] Blog post linked from the site
 - [ ] AWS Cloud Practitioner cert on the resume (already done ✅)
 
