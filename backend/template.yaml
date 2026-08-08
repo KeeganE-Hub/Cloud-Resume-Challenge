@@ -1,25 +1,31 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
+# CloudFormation caps the Description field below at 1024 characters -
+# that's an actual AWS limit, not a style choice, so the fuller
+# explanation of how everything fits together lives here as a comment
+# instead, where there's no length limit at all.
+#
+# This stack runs BOTH the original REST counter (Part 3) and the new
+# real-time WebSocket counter (Part 8) side by side. That lets the
+# live site keep working off the REST endpoint while the WebSocket
+# path is still being set up and tested. Once you've confirmed the
+# WebSocket version works end-to-end, the REST section below can be
+# deleted (see the comment above VisitorCountFunction).
+#
+# How the WebSocket path fits together:
+#   1. A visitor's browser opens a WebSocket connection -> API Gateway
+#      runs the $connect route -> DBUpdater saves their connection ID
+#      and bumps the count in VisitorCountTable.
+#   2. That write to VisitorCountTable is picked up by a DynamoDB
+#      Stream, which triggers DBStreamProcessor.
+#   3. DBStreamProcessor looks up every currently-open connection ID
+#      and pushes the new count out to all of them over the socket.
+#   4. When a visitor closes the tab, $disconnect fires and DBUpdater
+#      just removes their connection ID - it does NOT decrement the
+#      count, since someone leaving isn't "undoing" their visit.
 Description: >
-  Cloud Resume Challenge backend - transitional version with BOTH the
-  original REST counter (Part 3) and the new real-time WebSocket
-  counter (Part 8) deployed side by side. This lets the live site
-  keep working off the REST endpoint while the WebSocket path is
-  still being set up and tested. Once you've confirmed the WebSocket
-  version works end-to-end, the REST section below can be deleted
-  (see the comment above VisitorCountFunction).
-
-  How the WebSocket path fits together:
-    1. A visitor's browser opens a WebSocket connection -> API Gateway
-       runs the $connect route -> DBUpdater saves their connection ID
-       and bumps the count in VisitorCountTable.
-    2. That write to VisitorCountTable is picked up by a DynamoDB
-       Stream, which triggers DBStreamProcessor.
-    3. DBStreamProcessor looks up every currently-open connection ID
-       and pushes the new count out to all of them over the socket.
-    4. When a visitor closes the tab, $disconnect fires and DBUpdater
-       just removes their connection ID - it does NOT decrement the
-       count, since someone leaving isn't "undoing" their visit.
+  Cloud Resume Challenge backend - REST counter (Part 3) and real-time
+  WebSocket counter (Part 8) running side by side during the transition.
 
 Globals:
   Function:
