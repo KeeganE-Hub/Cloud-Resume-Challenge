@@ -45,13 +45,10 @@ def lambda_handler(event, context):
 
 
 def extract_new_count(event):
-    """Pulls the new count value out of a DynamoDB Stream event.
-
-    DynamoDB Stream events represent numbers as {"N": "123"} (a string
-    inside a dict, not a plain number) - that's just the stream's
-    wire format, same idea as how DynamoDB normally represents typed
-    attributes.
-    """
+    # pulls the new count out of a DynamoDB Stream event. Streams
+    # represent numbers as {"N": "123"} - a string inside a dict, not
+    # a plain number - that's just the stream's wire format, same
+    # idea as how DynamoDB normally represents typed attributes
     for record in event.get("Records", []):
         if record["eventName"] not in ("INSERT", "MODIFY"):
             continue
