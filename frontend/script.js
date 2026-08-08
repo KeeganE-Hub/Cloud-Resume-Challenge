@@ -1,4 +1,4 @@
-// ===== Contact popup (business card) =====
+// Contact popup (business card)
 // Clicking the Contact button in the nav bar shows/hides the little
 // business-card panel next to it. Also closes if you click anywhere
 // else on the page, or press Escape - otherwise it'd just sit open
@@ -45,7 +45,7 @@ document.addEventListener("keydown", function (event) {
 });
 
 
-// ===== Theme toggle =====
+// Theme toggle
 // The <html> tag gets a data-theme="light" attribute when light mode
 // is on. There's a matching bit of inline script up in index.html's
 // <head> that checks localStorage before the page even renders, so
@@ -81,7 +81,7 @@ themeButton.addEventListener("click", function () {
 });
 
 
-// ===== Visitor counter =====
+// Visitor counter
 //
 // This site currently supports TWO ways of showing the visitor count,
 // on purpose, during the transition to the real-time WebSocket

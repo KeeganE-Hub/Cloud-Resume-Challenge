@@ -363,12 +363,23 @@ button:focus-visible {
   color: var(--accent);
 }
 
-/* every contact icon is now a real image file in frontend/images/,
-   sized to match how the hand-drawn SVGs used to look */
+/* every contact icon is now a real image file in frontend/images/.
+   Height is fixed and width is left as "auto" so each icon keeps its
+   own natural shape instead of being squashed into a uniform square -
+   that's why email (naturally wide) and location (naturally narrow/
+   tall) used to look off. */
 .icon-img {
-  width: 15px;
-  height: 15px;
+  height: 18px;
+  width: auto;
   flex-shrink: 0;
+}
+
+/* the location pin is a slender shape with a lot of empty space on
+   either side of it even at the correct aspect ratio, so it still
+   reads as smaller than the others next to it unless it gets a bit
+   of extra height to compensate */
+.icon-location {
+  height: 22px;
 }
 
 /* email/phone/location/GitHub are solid black shapes on a transparent
