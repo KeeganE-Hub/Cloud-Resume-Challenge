@@ -42,7 +42,15 @@ jobs:
 
       - name: SAM build
         working-directory: backend
-        run: sam build
+        # --use-container sidesteps a long-standing SAM CLI quirk: its
+        # Python version check only looks in a few hardcoded system
+        # paths (like /usr/bin/python) and never actually checks
+        # wherever actions/setup-python installed Python to - so it
+        # fails to "see" 3.14 even though it's genuinely on PATH.
+        # Building inside AWS's own container image sidesteps that
+        # check entirely, since the right Python version is already
+        # sitting exactly where SAM expects it to be.
+        run: sam build --use-container
 
       - name: SAM deploy
         working-directory: backend
