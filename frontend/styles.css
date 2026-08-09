@@ -920,22 +920,6 @@ transition line on .cert-card above)
   line-height: 1.6;
 }
 
-.breakdown-diagram-section {
-  max-width: var(--page-width);
-  margin: 0 auto;
-  padding: 2.75rem 1.5rem;
-  border-top: 1px solid var(--border-color);
-}
-
-.diagram-img {
-  display: block;
-  width: 100%;
-  height: auto;
-  margin-top: 1.5rem;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-}
-
 /* ---------------- small screens ---------------- */
 
 @media (max-width: 860px) {
@@ -991,6 +975,16 @@ transition line on .cert-card above)
     flex-wrap: nowrap;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    /* the scrollbar itself still works with these hidden, on every
+       mobile browser that actually matters - this just stops it from
+       drawing as a visible bar sitting under the nav the whole time */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .topbar-nav::-webkit-scrollbar,
+  .topbar-links::-webkit-scrollbar {
+    display: none;
   }
 
   .hero {

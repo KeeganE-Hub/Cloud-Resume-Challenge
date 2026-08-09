@@ -376,10 +376,7 @@
       <p class="hero-about">
         A plain-language rundown of every service this project uses, and what
         it's actually doing. If you're skimming this before an interview or a
-        code review, this is the short version of each piece — the full story
-        (including what broke along the way) is in the
-        <a href="#">blog post</a>.
-        <!-- TODO: point that link at the real blog post once it's published -->
+        code review, this is the short version of each piece.
       </p>
     </section>
 
@@ -392,19 +389,19 @@
           <dl class="breakdown-list">
             <div class="breakdown-item">
               <dt>S3</dt>
-              <dd>Amazon's file storage service. This is where the actual HTML, CSS, JS, and image files for the resume site live. It's not serving them directly to visitors, though — that's CloudFront's job.</dd>
+              <dd>Stores the actual HTML, CSS, JS, and image files for the site. Nothing reads from it directly, though — CloudFront sits in front of it as the CDN and is the only thing allowed to read from the bucket, via Origin Access Control, so every real visitor request flows through CloudFront first.</dd>
             </div>
             <div class="breakdown-item">
               <dt>CloudFront</dt>
-              <dd>a content delivery network (CDN). It sits in front of the S3 bucket, caches the site at edge locations around the world so it loads fast wherever a visitor is, and handles HTTPS for the domain. The S3 bucket itself stays private — only CloudFront is allowed to read from it.</dd>
+              <dd>The CDN that actually serves the site to visitors — it caches content at edge locations worldwide, handles HTTPS using the certificate from ACM, and pulls from the S3 bucket as its origin. Route 53 is what points the domain at this distribution in the first place.</dd>
             </div>
             <div class="breakdown-item">
               <dt>Route 53</dt>
-              <dd>AWS's DNS service. It points the domain name at CloudFront, and it's also where the domain itself was registered.</dd>
+              <dd>AWS's DNS service — this is where the domain was registered, and it's what resolves the domain name to the CloudFront distribution, so a visitor typing the URL actually ends up routed to CloudFront, not S3 directly.</dd>
             </div>
             <div class="breakdown-item">
               <dt>Certificate Manager (ACM)</dt>
-              <dd>issues the free TLS certificate CloudFront uses to serve the site over HTTPS instead of plain HTTP.</dd>
+              <dd>Issues the free TLS certificate that CloudFront uses to serve everything over HTTPS. Requested specifically in us-east-1, since that's a requirement for any certificate used with CloudFront regardless of where the rest of the stack lives.</dd>
             </div>
           </dl>
         </div>
@@ -415,19 +412,19 @@
           <dl class="breakdown-list">
             <div class="breakdown-item">
               <dt>API Gateway</dt>
-              <dd>the entry point the browser actually talks to. This project uses two kinds side by side: a REST API (the original counter) and a WebSocket API (the real-time version) — they work quite differently under the hood even though they're the same underlying AWS service.</dd>
+              <dd>The entry point the browser's WebSocket connection actually talks to. It routes $connect and $disconnect events to DBUpdater, and it's also what DBStreamProcessor calls back into to push live count updates out to every open connection.</dd>
             </div>
             <div class="breakdown-item">
               <dt>Lambda</dt>
-              <dd>the actual code that runs when a request comes in. No server to manage, and it only runs — and only costs anything — while it's handling a request. There are three functions here: one for the REST counter, and two for the WebSocket version.</dd>
+              <dd>Runs the actual counter logic. DBUpdater handles new connections and disconnections coming from API Gateway; DBStreamProcessor reacts to DynamoDB Streams and pushes updates back out. Neither one runs — or costs anything — except when something actually triggers it.</dd>
             </div>
             <div class="breakdown-item">
               <dt>DynamoDB</dt>
-              <dd>a NoSQL database. Here it stores exactly one number — the visitor count — plus, for the real-time version, a list of which WebSocket connections are currently open.</dd>
+              <dd>Stores the visitor count in one table and tracks which WebSocket connections are currently open in a second. DBUpdater writes to both; DBStreamProcessor separately reads the connections table to know who to push each update to.</dd>
             </div>
             <div class="breakdown-item">
               <dt>DynamoDB Streams</dt>
-              <dd>fires an event every time something changes in a table. The real-time counter is built around this: every time the count updates, the stream triggers a Lambda that pushes the new number out to every open connection.</dd>
+              <dd>Watches the visitor count table for writes, and is what actually links DBUpdater to DBStreamProcessor — every time DBUpdater increments the count, the stream fires and triggers DBStreamProcessor automatically, with no polling involved on either side.</dd>
             </div>
           </dl>
         </div>
@@ -441,36 +438,24 @@
           <dl class="breakdown-list">
             <div class="breakdown-item">
               <dt>IAM</dt>
-              <dd>controls who — or what — is allowed to do what in the AWS account. Every Lambda, every deploy, every API call goes through an IAM permission check.</dd>
+              <dd>Controls what every other piece here is actually allowed to do — which resources a given Lambda can read or write, what GitHub Actions is permitted to deploy. Every interaction between these services implicitly passes through an IAM permission check first.</dd>
             </div>
             <div class="breakdown-item">
               <dt>CloudFormation / SAM</dt>
-              <dd>Infrastructure as Code. The entire backend is defined in one YAML template and deployed with a single command, so it can be rebuilt from scratch if it ever needs to be.</dd>
+              <dd>Defines the DynamoDB tables, both Lambda functions, and the API Gateway in one YAML template, deployed with a single command. This is exactly what GitHub Actions runs when it deploys the backend — nothing about the backend is ever clicked together by hand.</dd>
             </div>
             <div class="breakdown-item">
               <dt>GitHub Actions</dt>
-              <dd>deploys the site automatically on every push — no touching the AWS console by hand.</dd>
+              <dd>Deploys both halves of the project automatically on every push — syncing the frontend to S3 and invalidating CloudFront, or running the backend's tests and then deploying through SAM/CloudFormation, depending on which folder actually changed.</dd>
             </div>
             <div class="breakdown-item">
               <dt>AWS Budgets</dt>
-              <dd>a cost safety net. Sends an email alert if spending crosses a threshold, so nothing runs away unnoticed.</dd>
+              <dd>A cost safety net sitting outside the application itself — watches spending across every service above and sends an email alert if it crosses a threshold, so nothing here can run away unnoticed.</dd>
             </div>
           </dl>
         </div>
       </aside>
 
-    </div>
-
-    <div class="subsection breakdown-diagram-section">
-      <p class="section-eyebrow">Architecture</p>
-      <h2>How it fits together</h2>
-      <p class="hero-about">
-        The static site (left) and the two versions of the visitor counter (middle
-        and right) are independent of each other — the counter could be swapped out
-        entirely without touching the resume content itself. Both counter versions
-        currently run side by side; the blog post covers why.
-      </p>
-      <img class="diagram-img" src="images/architecture-diagram.svg" alt="Architecture diagram: Route 53 and CloudFront deliver the static site from S3; a REST API Gateway and a WebSocket API Gateway each front a Lambda function that read and write a DynamoDB visitor count table; a DynamoDB Stream on that table triggers a third Lambda that pushes live updates to open WebSocket connections; GitHub Actions deploys both the frontend and backend.">
     </div>
 
   </div> <!-- /#breakdown-view -->

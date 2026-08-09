@@ -52,7 +52,6 @@ Cloud-Resume-Challenge/
 │   ├── styles.css
 │   ├── script.js
 │   └── images/
-│       ├── architecture-diagram.svg
 │       ├── email.png, phone.png, location.png
 │       ├── github.png, linkedin.png
 │       └── theme-sun.png, theme-moon.png
@@ -60,7 +59,7 @@ Cloud-Resume-Challenge/
 ├── backend/
 │   ├── template.yaml           # SAM/CloudFormation - the whole backend as code
 │   ├── src/
-│   │   ├── app.py                  # REST counter (Part 3) - inactive backup
+│   │   ├── app.py                  # REST counter - inactive backup
 │   │   ├── dbupdater.py            # WebSocket $connect/$disconnect handler
 │   │   ├── dbstreamprocessor.py    # pushes live count updates over the socket
 │   │   └── requirements.txt
