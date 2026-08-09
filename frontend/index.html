@@ -88,14 +88,18 @@
     </nav>
 
     <div class="topbar-actions">
-      <!-- repo link filled in -->
-      <a class="repo-link-btn" href="https://github.com/KeeganE-Hub/Cloud-Resume-Challenge" target="_blank" rel="noopener">View on GitHub</a>
+      <!-- wrapped together so these two can be forced onto their own
+           single row on mobile, separately from the theme toggle -->
+      <div class="topbar-links">
+        <!-- repo link filled in -->
+        <a class="repo-link-btn" href="https://github.com/KeeganE-Hub/Cloud-Resume-Challenge" target="_blank" rel="noopener">View on GitHub</a>
 
-      <!-- swaps the middle of the page between the resume and the
-           technical breakdown - see script.js for the toggle logic -->
-      <button id="breakdown-toggle" class="breakdown-toggle-btn" aria-pressed="false">
-        Technical Breakdown
-      </button>
+        <!-- swaps the middle of the page between the resume and the
+             technical breakdown - see script.js for the toggle logic -->
+        <button id="breakdown-toggle" class="breakdown-toggle-btn" aria-pressed="false">
+          Technical Breakdown
+        </button>
+      </div>
 
       <!-- light/dark toggle. The actual switching logic lives in script.js -->
       <button id="theme-toggle" class="theme-toggle" aria-label="Switch between light and dark mode">
@@ -146,14 +150,6 @@
       </li>
     </ul>
 
-    <!-- this number gets filled in by script.js once the backend is set up -->
-    <!-- this number gets filled in by script.js once the backend is set up.
-         The tooltip text is also written dynamically by script.js each time
-         the count changes, so it always shows the current number. -->
-    <p class="visitor-counter">
-      Visitors: <span id="visitor-count">…</span>
-      <span class="visitor-tooltip" id="visitor-tooltip">This number is pulled from an Amazon DynamoDB Stream, so if you open up a new page you can see the number update on both.</span>
-    </p>
   </section>
 
   <!-- MAIN CONTENT + SIDEBAR
@@ -491,6 +487,19 @@
   </footer>
 
 </main>
+
+<!-- Permanent visitor counter bar - pinned to the bottom of the
+     viewport so it's always visible, not just something you'd
+     stumble across scrolling through the hero section. Tapping/
+     clicking it shows the same explanation that used to be a
+     hover-only tooltip - hover doesn't really exist on a phone, so
+     this works the same way on both. -->
+<footer class="visitor-bar" id="visitor-bar">
+  <button type="button" id="visitor-bar-toggle" class="visitor-bar-toggle" aria-haspopup="true" aria-expanded="false">
+    Visitors: <span id="visitor-count">…</span>
+  </button>
+  <div class="visitor-tooltip" id="visitor-tooltip" hidden>This number is pulled from an Amazon DynamoDB Stream, so if you open up a new page you can see the number update on both.</div>
+</footer>
 
 <script src="script.js"></script>
 </body>

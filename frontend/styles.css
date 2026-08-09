@@ -86,6 +86,10 @@ body {
   color: var(--text);
   font-family: var(--body-font);
   line-height: 1.6;
+  /* leaves room for the fixed visitor-count bar at the very bottom
+     of the screen, so it never sits on top of the real footer's
+     content */
+  padding-bottom: 2.75rem;
 }
 
 /* lets keyboard users jump past the nav bar straight to the content */
@@ -173,6 +177,15 @@ button:focus-visible {
   align-items: center;
   flex-wrap: wrap;
   justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+/* just the repo link + breakdown toggle, wrapped together so they
+   can be pinned to their own row on mobile, separately from the
+   theme toggle - on desktop this behaves identically to before */
+.topbar-links {
+  display: flex;
+  align-items: center;
   gap: 0.75rem;
 }
 
@@ -484,27 +497,59 @@ button:focus-visible {
   filter: none;
 }
 
-.visitor-counter {
+/* ---------------- permanent visitor counter bar ---------------- */
+
+/* pinned to the bottom of the viewport at all times - body gets
+   matching bottom padding further down so this never sits on top of
+   real content, like the contact footer's links */
+.visitor-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  background-color: rgba(13, 20, 32, 0.92);
+  border-top: 1px solid var(--border-color);
+  backdrop-filter: blur(6px);
+}
+
+:root[data-theme="light"] .visitor-bar {
+  background-color: rgba(221, 225, 230, 0.92);
+}
+
+.visitor-bar-toggle {
   position: relative;
-  display: inline-block;
+  background: none;
+  border: none;
   font-family: var(--mono-font);
   font-size: 0.781rem;
   color: var(--text-faint);
-  margin: 0;
-  cursor: default;
+  cursor: pointer;
+  /* generous vertical padding so this is a comfortable tap target,
+     not just however tall the text happens to be */
+  padding: 0.75rem 1.25rem;
+  transition: color 0.15s ease;
 }
 
-/* small hover card explaining where the live count actually comes
-   from - hidden until you hover the "Visitors: N" line itself.
-   Text content is written in by script.js each time the count
-   changes, so the ordinal number in here always matches what's
+.visitor-bar-toggle:hover {
+  color: var(--accent);
+}
+
+/* small card explaining where the live count actually comes from -
+   opens above the bar (not below - there's no room below, it's
+   pinned to the bottom edge of the screen) when the bar is tapped or
+   clicked. Text content is written in by script.js each time the
+   count changes, so the ordinal number in here always matches what's
    currently on screen. */
 .visitor-tooltip {
   position: absolute;
-  top: calc(100% + 0.5rem);
-  left: 0;
+  bottom: calc(100% + 0.5rem);
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 15;
-  width: 220px;
+  width: 240px;
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 6px;
@@ -513,16 +558,12 @@ button:focus-visible {
   font-size: 0.75rem;
   line-height: 1.5;
   color: var(--text-muted);
+  text-align: left;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.15s ease;
-  pointer-events: none;
 }
 
-.visitor-counter:hover .visitor-tooltip {
-  opacity: 1;
-  visibility: visible;
+.visitor-tooltip[hidden] {
+  display: none;
 }
 
 /* ---------------- main content + sidebar ---------------- */
@@ -904,8 +945,52 @@ transition line on .cert-card above)
 }
 
 @media (max-width: 640px) {
+  /* Restructures the top bar into three explicit rows instead of
+     letting everything wrap wherever it happens to fit:
+       row 1: name + theme toggle (opposite ends)
+       row 2: Education / Experience / Projects / Contact
+       row 3: View on GitHub + Technical Breakdown
+     .topbar-actions switches to "display: contents" so its two
+     children (the .topbar-links wrapper and the theme toggle) become
+     direct grid items of .topbar-inner - that's what lets them land
+     in two different rows instead of being stuck together as a unit. */
   .topbar-inner {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "name theme"
+      "nav nav"
+      "actions actions";
+    row-gap: 0.625rem;
+    align-items: center;
     padding: 0.875rem 1.25rem;
+  }
+
+  .topbar-name {
+    grid-area: name;
+  }
+
+  .topbar-actions {
+    display: contents;
+  }
+
+  .theme-toggle {
+    grid-area: theme;
+    justify-self: end;
+  }
+
+  .topbar-links {
+    grid-area: actions;
+  }
+
+  .topbar-nav,
+  .topbar-links {
+    /* these need to fit on exactly one line each - horizontal
+       scroll is the fallback on a screen too narrow to fit
+       everything, rather than wrapping onto extra rows */
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .hero {
@@ -921,13 +1006,22 @@ transition line on .cert-card above)
     align-items: flex-start;
   }
 
-  /* the popup card is anchored to the button's right edge normally,
-     but on a narrow screen that can push it off the left side of the
-     viewport - pin it to the screen edge instead */
+  /* the popup used to anchor to the button's edge, but that broke in
+     two ways on mobile: it could push off-screen depending on where
+     the button ended up, and once the nav row below becomes
+     horizontally scrollable it would get clipped by that container's
+     overflow. Centering it as a fixed overlay sidesteps both - it no
+     longer depends on the button's position or any ancestor's
+     overflow setting at all. */
   .business-card {
-    right: -20px;
-    width: calc(100vw - 40px);
-    max-width: 280px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    right: auto;
+    transform: translate(-50%, -50%);
+    width: calc(100vw - 48px);
+    max-width: 320px;
+    z-index: 30;
   }
 }
 

@@ -2,7 +2,7 @@
 
 My resume, built as a real serverless AWS application instead of a static file — completed as part of the [Cloud Resume Challenge](https://cloudresumechallenge.dev/).
 
-**Live site:** [yourdomain.com](#) <!-- TODO: fill in the real domain once it's live -->
+**Live site:** [keeganonthecloud.com](https://keeganonthecloud.com/)
 
 ## About this project
 
@@ -23,7 +23,7 @@ Click the **Technical Breakdown** button in the site's own nav bar for a plain-l
 ## Technologies used
 
 **Frontend**
-- HTML, CSS, JavaScript — no framework
+- HTML, CSS, JavaScript
 - Responsive layout, light/dark theme support
 
 **AWS**
@@ -69,31 +69,8 @@ Cloud-Resume-Challenge/
 │       ├── test_dbupdater.py
 │       └── test_dbstreamprocessor.py
 │
-├── .github/
-│   └── workflows/
-│       ├── frontend-deploy.yaml    # syncs frontend/ to S3, invalidates CloudFront
-│       └── backend-deploy.yaml     # runs pytest, then sam deploy
-│
-├── docs/
-│   ├── blog-post.docx
-│   ├── technical-breakdown.docx
-│   └── mockups/
-│       └── architecture-mockup.svg
-│
-└── iam-policy.json              # example least-privilege IAM policy (reference)
+└── .github/
+    └── workflows/
+        ├── frontend-deploy.yaml    # syncs frontend/ to S3, invalidates CloudFront
+        └── backend-deploy.yaml     # runs pytest, then sam deploy
 ```
-
-## Architecture
-
-![Architecture diagram](frontend/images/architecture-diagram.svg)
-
-## Documentation
-
-- **Blog post:** [link](#) <!-- TODO: add once published -->
-- **Technical breakdown:** built into the live site (nav bar → *Technical Breakdown*), or see `docs/technical-breakdown.docx`
-
-## Contact
-
-- GitHub: [KeeganE-Hub](https://github.com/KeeganE-Hub)
-- LinkedIn: [linkedin.com/in/keeganelgin](https://linkedin.com/in/keeganelgin)
-- Email: keeganelgin@gmail.com

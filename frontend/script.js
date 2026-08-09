@@ -150,6 +150,50 @@ document.addEventListener("keydown", function (event) {
 });
 
 
+// Visitor count bar tooltip
+// Same open/close pattern as the Contact popup above - click to
+// toggle, click elsewhere or press Escape to close. This used to be
+// a hover-only tooltip, but hover isn't really a thing on a phone,
+// so it's tap/click-toggled now, which works the same way on both
+// touch and mouse.
+
+const visitorBarToggle = document.getElementById("visitor-bar-toggle");
+const visitorTooltipEl = document.getElementById("visitor-tooltip");
+
+function openVisitorTooltip() {
+  visitorTooltipEl.hidden = false;
+  visitorBarToggle.setAttribute("aria-expanded", "true");
+}
+
+function closeVisitorTooltip() {
+  visitorTooltipEl.hidden = true;
+  visitorBarToggle.setAttribute("aria-expanded", "false");
+}
+
+visitorBarToggle.addEventListener("click", function (event) {
+  event.stopPropagation();
+
+  if (visitorTooltipEl.hidden) {
+    openVisitorTooltip();
+  } else {
+    closeVisitorTooltip();
+  }
+});
+
+document.addEventListener("click", function (event) {
+  const clickedInsideTooltip = visitorBarToggle.contains(event.target);
+  if (!visitorTooltipEl.hidden && !clickedInsideTooltip) {
+    closeVisitorTooltip();
+  }
+});
+
+document.addEventListener("keydown", function (event) {
+  if (event.key === "Escape" && !visitorTooltipEl.hidden) {
+    closeVisitorTooltip();
+  }
+});
+
+
 // Theme toggle
 // The <html> tag gets a data-theme="light" attribute when light mode
 // is on. There's a matching bit of inline script up in index.html's
