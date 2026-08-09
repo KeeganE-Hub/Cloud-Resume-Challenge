@@ -14,6 +14,7 @@ Click the **Technical Breakdown** button in the site's own nav bar for a plain-l
 
 - Frontend deployed to **S3 + CloudFront**, with a custom domain through **Route 53** and a free TLS certificate from **ACM**
 - Real-time visitor counter built on a **WebSocket API Gateway**, two **Lambda** functions, and a **DynamoDB Stream** — the count updates live across every open browser tab
+- All backend logic runs on **AWS Lambda** — one function handles new WebSocket connections and disconnections, the other reacts to database changes and pushes the updated count back out. Neither one runs, or costs anything, except when something actually triggers it — no server sitting idle between requests
 - The original REST-based counter (the base version of the challenge) is kept in the codebase as a commented-out backup rather than deleted, alongside its own test suite
 - Entire backend defined as code with **AWS SAM** — one command rebuilds the whole stack from scratch
 - **CI/CD via GitHub Actions** — separate frontend/backend workflows that only trigger on changes to their own folder, so a CSS tweak doesn't trigger a backend redeploy and vice versa

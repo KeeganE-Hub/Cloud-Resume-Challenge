@@ -967,17 +967,18 @@ transition line on .cert-card above)
     grid-area: actions;
   }
 
+  /* previously relied on horizontal scroll to keep these on one line -
+     that technically worked, but "technically works if you swipe" isn't
+     the same as actually fitting. Shrinking the font/padding/gaps here
+     is what makes everything genuinely fit without needing to scroll
+     at all, on any phone width that matters. flex-wrap stays "nowrap"
+     and overflow-x stays "auto" purely as an invisible safety net for
+     an unusually narrow device - it shouldn't ever actually trigger. */
   .topbar-nav,
   .topbar-links {
-    /* these need to fit on exactly one line each - horizontal
-       scroll is the fallback on a screen too narrow to fit
-       everything, rather than wrapping onto extra rows */
     flex-wrap: nowrap;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    /* the scrollbar itself still works with these hidden, on every
-       mobile browser that actually matters - this just stops it from
-       drawing as a visible bar sitting under the nav the whole time */
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
@@ -985,6 +986,33 @@ transition line on .cert-card above)
   .topbar-nav::-webkit-scrollbar,
   .topbar-links::-webkit-scrollbar {
     display: none;
+  }
+
+  .topbar-nav {
+    gap: 0.55rem;
+  }
+
+  .topbar-nav a,
+  .contact-toggle {
+    font-size: 0.72rem;
+  }
+
+  .topbar-links {
+    gap: 0.5rem;
+  }
+
+  .repo-link-btn,
+  .breakdown-toggle-btn {
+    font-size: 0.72rem;
+    padding: 0.4em 0.7em;
+  }
+
+  .breakdown-toggle-btn {
+    /* was 24ch at the larger desktop font-size - recalculated for
+       this smaller mobile font-size, still with enough buffer to
+       cover "Technical Breakdown" (the longer of its two labels)
+       without visibly shifting width when the text changes */
+    min-width: 21ch;
   }
 
   .hero {
