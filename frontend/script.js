@@ -1,3 +1,108 @@
+// Technical breakdown toggle
+// Swaps the middle of the page between the resume and a technical
+// writeup of how the site is actually built, without touching the
+// header or footer. The swap fades out the old view, then fades in
+// the new one, instead of just snapping - the actual fade timing
+// lives in styles.css on #resume-view/#breakdown-view; FADE_MS below
+// just needs to match that CSS transition duration so the JS knows
+// when it's safe to actually swap which view is hidden.
+//
+// Clicking a section link (Education, Experience, etc.) while the
+// breakdown is showing switches back to the resume first, then
+// scrolls - otherwise the link would try to jump to a section that's
+// currently hidden and nothing would visibly happen.
+
+const FADE_MS = 300;
+
+const breakdownToggle = document.getElementById("breakdown-toggle");
+const resumeView = document.getElementById("resume-view");
+const breakdownView = document.getElementById("breakdown-view");
+
+// fades hideEl out, then (once that's finished) hides it, unhides
+// showEl, and fades that in. afterShow is optional - anything passed
+// in runs right after showEl becomes visible, which matters for the
+// nav-link handler below since it needs to wait for the resume view
+// to actually be back before it can scroll to a section in it.
+function crossfadeViews(hideEl, showEl, afterShow) {
+  hideEl.style.opacity = "0";
+
+  window.setTimeout(function () {
+    hideEl.hidden = true;
+    hideEl.style.opacity = "";
+
+    showEl.hidden = false;
+    showEl.style.opacity = "0";
+    void showEl.offsetWidth; // forces the browser to register opacity:0 first - skip this and it would just snap straight to 1 instead of fading in
+    showEl.style.opacity = "1";
+
+    if (afterShow) {
+      afterShow();
+    }
+  }, FADE_MS);
+}
+
+function showResumeView(afterShow) {
+  crossfadeViews(breakdownView, resumeView, afterShow);
+  breakdownToggle.setAttribute("aria-pressed", "false");
+  breakdownToggle.textContent = "Technical Breakdown";
+}
+
+function showBreakdownView() {
+  crossfadeViews(resumeView, breakdownView);
+  breakdownToggle.setAttribute("aria-pressed", "true");
+  breakdownToggle.textContent = "Back to Resume";
+}
+
+breakdownToggle.addEventListener("click", function () {
+  const alreadyShowingBreakdown = breakdownToggle.getAttribute("aria-pressed") === "true";
+
+  if (alreadyShowingBreakdown) {
+    showResumeView();
+  } else {
+    showBreakdownView();
+  }
+
+  // jump back to the top either way - staying scrolled halfway down
+  // a section that just got swapped out would look broken
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+// the "See the full technical breakdown" link inside the Cloud Resume
+// Challenge project entry does the same thing as clicking the button
+// in the nav bar - just re-trigger that button's own click rather
+// than duplicating the show/scroll logic here
+const viewBreakdownLink = document.getElementById("view-breakdown-link");
+if (viewBreakdownLink) {
+  viewBreakdownLink.addEventListener("click", function (event) {
+    event.preventDefault();
+    breakdownToggle.click();
+  });
+}
+
+// the Education/Experience/Projects/Skills links in the nav bar only
+// make sense from the resume view - switch back to it first if
+// they're clicked while the breakdown is showing
+document.querySelectorAll('.topbar-nav a[href^="#"]').forEach(function (link) {
+  link.addEventListener("click", function (event) {
+    if (breakdownView.hidden) {
+      return; // already on the resume, nothing to do
+    }
+    event.preventDefault();
+    const targetId = link.getAttribute("href").slice(1);
+    // wait for the fade-back-to-resume to actually finish before
+    // scrolling - the target section doesn't exist in the layout
+    // (and scrollIntoView can't do anything useful) while it's
+    // still mid-fade or hidden
+    showResumeView(function () {
+      const target = document.getElementById(targetId);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth" });
+      }
+    });
+  });
+});
+
+
 // Contact popup (business card)
 // Clicking the Contact button in the nav bar shows/hides the little
 // business-card panel next to it. Also closes if you click anywhere
@@ -83,24 +188,13 @@ themeButton.addEventListener("click", function () {
 
 // Visitor counter
 //
-// This site currently supports TWO ways of showing the visitor count,
-// on purpose, during the transition to the real-time WebSocket
-// version (Part 8 of GUIDE.md):
-//
-//   - REST (the original, Part 3) - one-shot fetch(), only updates
-//     on page load/refresh
-//   - WebSocket (the new one, Part 8) - stays connected, updates
-//     live if someone else visits while you're looking at the page
-//
-// Whichever URL below is actually filled in gets used - WebSocket
-// wins if both are set, since that's the upgrade. Once the WebSocket
-// path is fully tested and working, the REST constant/function (and
-// the matching backend/src/app.py + VisitorCountFunction/
-// VisitorCountApi in template.yaml) can all be deleted as a cleanup
-// step - this fallback logic can come out at the same time.
+// This used to fall back to the original REST counter (Part 3) while
+// the WebSocket version was still being tested. Now that Part 8 is
+// confirmed up and running, WebSocket is the only path actually in
+// use - the REST code below is commented out rather than deleted, in
+// case it's ever needed again as a backup.
 
-const API_URL = "[YOUR_API_GATEWAY_INVOKE_URL]"; // REST endpoint from Part 3 - if you already filled this in before, keep that value here
-const WEBSOCKET_URL = "[YOUR_WEBSOCKET_URL]"; // WebSocket endpoint from Part 8 - fill in once it's deployed and tested
+const WEBSOCKET_URL = "[YOUR_WEBSOCKET_URL]"; // paste your real WebSocket URL here - carry over the value from your previous copy of this file if you already had one working
 
 function isFilledIn(url) {
   // a placeholder still starts with "[YOUR_" - so this just checks
@@ -108,22 +202,26 @@ function isFilledIn(url) {
   return Boolean(url) && !url.startsWith("[YOUR_");
 }
 
-async function updateVisitorCountViaRest(counterSpan) {
-  try {
-    const response = await fetch(API_URL);
-
-    if (!response.ok) {
-      throw new Error("Server responded with status " + response.status);
-    }
-
-    const data = await response.json();
-    counterSpan.textContent = data.count;
-
-  } catch (error) {
-    console.error("Couldn't load the visitor count (REST):", error);
-    counterSpan.textContent = "—";
-  }
-}
+// --- REST counter (Part 3) - commented out, kept only as a backup ---
+//
+// const API_URL = "[YOUR_API_GATEWAY_INVOKE_URL]";
+//
+// async function updateVisitorCountViaRest(counterSpan) {
+//   try {
+//     const response = await fetch(API_URL);
+//
+//     if (!response.ok) {
+//       throw new Error("Server responded with status " + response.status);
+//     }
+//
+//     const data = await response.json();
+//     counterSpan.textContent = data.count;
+//
+//   } catch (error) {
+//     console.error("Couldn't load the visitor count (REST):", error);
+//     counterSpan.textContent = "—";
+//   }
+// }
 
 function connectVisitorCounterViaWebSocket(counterSpan) {
   const socket = new WebSocket(WEBSOCKET_URL);
@@ -163,10 +261,10 @@ function initVisitorCounter() {
 
   if (isFilledIn(WEBSOCKET_URL)) {
     connectVisitorCounterViaWebSocket(counterSpan);
-  } else if (isFilledIn(API_URL)) {
-    updateVisitorCountViaRest(counterSpan);
   } else {
-    // neither backend is wired up yet
+    // WebSocket isn't wired up yet. To bring back the REST fallback
+    // instead, uncomment the block above and call
+    // updateVisitorCountViaRest(counterSpan) here.
     counterSpan.textContent = "—";
   }
 }

@@ -21,7 +21,7 @@ cloud-resume-project/
 ├── backend/
 │   ├── template.yaml
 │   ├── src/
-│   │   ├── app.py               (REST handler, Part 3 - kept until Part 8 is done)
+│   │   ├── app.py               (REST handler, Part 3 - inactive backup, not referenced by template.yaml anymore)
 │   │   ├── dbupdater.py         (WebSocket $connect/$disconnect handler)
 │   │   ├── dbstreamprocessor.py (pushes count updates over the socket)
 │   │   └── requirements.txt
@@ -31,15 +31,16 @@ cloud-resume-project/
 │       └── test_dbstreamprocessor.py
 ├── .github/
 │   └── workflows/
-│       ├── backend-deploy.yml
-│       └── frontend-deploy.yml
+│       ├── backend-deploy.yaml
+│       └── frontend-deploy.yaml
 └── GUIDE.md
 ```
 
 Note: `app.py` and `test_app.py` are the original REST-based counter
-from Part 3. They're kept in place alongside the Part 8 WebSocket
-files so the live site keeps working throughout — see the cleanup
-note at the end of Part 8 for when/how to remove them.
+from Part 3. Part 8 (WebSocket) is the active version now, so these
+are inactive backups — `template.yaml` no longer references `app.py`
+at all. See the note at the end of Part 3 for how to bring REST back
+if it's ever needed, or the end of Part 8 to remove it for good.
 
 **One GitHub repo, not two** — the official challenge spec calls for splitting frontend/backend into separate repos, but plenty of people build this as a single repo with `frontend/`/`backend/` folders instead, and it's not treated as a hard requirement in practice. Went with one repo here since it's easier for a hiring manager to review the whole project in one place without hopping between two links.
 
@@ -118,12 +119,12 @@ At this point `https://yourdomain.com` should load your resume over HTTPS. ✅ F
 
 ## Part 3 — Backend: DynamoDB + Lambda + API Gateway
 
-> This is the original REST-based counter. If you go on to build the
-> real-time WebSocket version in Part 8, both versions can coexist in
-> the same deploy while you're transitioning — the REST resources
-> here aren't deleted automatically, so the live site keeps working
-> off this one until you've confirmed the WebSocket version works and
-> choose to remove this section as a cleanup step.
+> This is the original REST-based counter. **Status: commented out.**
+> Part 8 (the WebSocket version) is confirmed working, so the
+> `VisitorCountFunction`/`VisitorCountApi` resources below are now
+> commented out in `template.yaml` rather than deleted — kept as a
+> backup you can uncomment and redeploy if the WebSocket version ever
+> needs a fallback, but not actually running right now.
 
 All defined as code in `backend/template.yaml` — you won't click these out manually, SAM creates them.
 
@@ -191,7 +192,7 @@ git commit -m "Initial commit"
 git remote add origin https://github.com/yourname/cloud-resume-project.git
 git push -u origin main
 ```
-Both workflow files (`frontend-deploy.yml` and `backend-deploy.yml`) already live in `.github/workflows/` in this project, so there's nothing to move around — each one is already set up to only trigger on pushes that touch its own folder (`frontend/` or `backend/` respectively), so they won't step on each other.
+Both workflow files (`frontend-deploy.yaml` and `backend-deploy.yaml`) already live in `.github/workflows/` in this project, so there's nothing to move around — each one is already set up to only trigger on pushes that touch its own folder (`frontend/` or `backend/` respectively), so they won't step on each other.
 
 **Add GitHub Secrets** (repo → Settings → Secrets and variables → Actions → New repository secret):
 
@@ -205,8 +206,8 @@ Both workflow files (`frontend-deploy.yml` and `backend-deploy.yml`) already liv
 Since it's one repo now, both workflows pull from the same set of secrets — no need to duplicate `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` across two separate repos' settings pages like a two-repo setup would require.
 
 **What each workflow does:**
-- `frontend-deploy.yml`: on every push to `main` that touches `frontend/`, syncs the folder to S3 and invalidates CloudFront
-- `backend-deploy.yml`: on every push to `main` that touches `backend/`, runs `pytest` first, and only deploys via `sam deploy` if tests pass
+- `frontend-deploy.yaml`: on every push to `main` that touches `frontend/`, syncs the folder to S3 and invalidates CloudFront
+- `backend-deploy.yaml`: on every push to `main` that touches `backend/`, runs `pytest` first, and only deploys via `sam deploy` if tests pass
 
 Push a small change (like fixing a typo in the resume) to confirm the pipeline actually fires and the site updates automatically.
 
@@ -225,12 +226,12 @@ Requirement: a short post describing something you learned. Dev.to or Hashnode a
 This is an optional extension from the official Cloud Resume Challenge
 site, not part of the base challenge. It adds a real-time counter that
 pushes live updates to every open browser tab, instead of only
-updating on refresh — running **alongside** the REST version from
-Part 3 while you're setting it up and testing it, rather than
-replacing it immediately. That way the live site keeps working the
-whole time. Once you've confirmed the WebSocket version works
-end-to-end, you can go back and delete the REST resources as a
-cleanup step (see the note at the end of this section).
+updating on refresh. **Status: this is the active version.** It ran
+alongside the REST version from Part 3 while it was being built and
+tested, so the live site kept working the whole time — now that it's
+confirmed working end-to-end, the REST resources are commented out
+(not deleted) as a backup. See the note at the end of Part 3 for how
+to bring REST back if it's ever needed.
 
 ### How it works
 
@@ -338,14 +339,17 @@ pytest tests -v
 
 Since Part 7 already covers the "write a blog post" requirement, this extension gives you a good chunk of extra material for it: the REST-vs-WebSocket tradeoff, why DynamoDB Streams reads are free specifically *because* Lambda is the consumer, or the `GoneException` cleanup pattern for handling connections that vanish without a proper `$disconnect`.
 
-### Cleanup — once you're confident the WebSocket version is solid
+### Cleanup — done (commented out, not deleted)
 
-Leaving both versions running doesn't cost anything extra beyond a few cents (an idle Lambda and unused API Gateway route don't accrue charges just for existing) — but it's worth tidying up once you're done testing, so the project isn't carrying dead code:
+Now that the WebSocket version is confirmed solid, the REST version has been stepped down — but kept as a backup rather than removed outright:
 
-- Delete `backend/src/app.py` and `backend/tests/test_app.py`
-- In `template.yaml`, delete the `VisitorCountFunction` and `VisitorCountApi` resources, and the `ApiUrl` output
-- In `script.js`, delete `API_URL`, `updateVisitorCountViaRest()`, and simplify `initVisitorCounter()` to just call the WebSocket path directly
-- Run `sam deploy` again — the changeset will show the REST resources being removed from AWS
+- `template.yaml`: `VisitorCountFunction`, `VisitorCountApi`, and the `ApiUrl` output are commented out. `sam deploy` no longer creates/keeps them in AWS.
+- `script.js`: the REST fetch code (`API_URL`, `updateVisitorCountViaRest()`) is commented out; `initVisitorCounter()` now only calls the WebSocket path.
+- `backend/src/app.py` and `backend/tests/test_app.py` are left fully intact (not commented out) — nothing references `app.py` from `template.yaml` anymore, so it just sits unused until needed. The tests still run fine in CI since they test the function directly, independent of whether it's deployed.
+
+**If REST is ever needed again**: uncomment the two resources + output in `template.yaml`, uncomment the REST block in `script.js` and switch `initVisitorCounter()`'s fallback branch back on, then `sam deploy`.
+
+**To remove it for good instead** (skip this unless you're sure): delete `backend/src/app.py`, `backend/tests/test_app.py`, and the commented-out blocks in `template.yaml`/`script.js` rather than just leaving them commented.
 
 ---
 

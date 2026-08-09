@@ -1,3 +1,5 @@
 .aws-sam/
 __pycache__/
 GUIDE.md
+iam-policy.json
+docs

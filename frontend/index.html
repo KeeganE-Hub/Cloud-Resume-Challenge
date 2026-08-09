@@ -47,7 +47,6 @@
       <a href="#education">Education</a>
       <a href="#experience">Experience</a>
       <a href="#projects">Projects</a>
-      <a href="#skills">Skills</a>
 
       <!-- Contact used to just be a link down to the footer - now it
            pops open a little business-card-style panel instead, right
@@ -92,30 +91,26 @@
       <!-- TODO: swap this href for the real repo URL once it's public -->
       <a class="repo-link-btn" href="#" target="_blank" rel="noopener">View on GitHub</a>
 
+      <!-- swaps the middle of the page between the resume and the
+           technical breakdown - see script.js for the toggle logic -->
+      <button id="breakdown-toggle" class="breakdown-toggle-btn" aria-pressed="false">
+        Technical Breakdown
+      </button>
+
       <!-- light/dark toggle. The actual switching logic lives in script.js -->
       <button id="theme-toggle" class="theme-toggle" aria-label="Switch between light and dark mode">
         <!-- sun icon, shown in dark mode (click to go light) -->
-        <svg class="theme-icon sun-icon" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
-          <line x1="12" y1="2" x2="12" y2="5" stroke="currentColor" stroke-width="1.5"/>
-          <line x1="12" y1="19" x2="12" y2="22" stroke="currentColor" stroke-width="1.5"/>
-          <line x1="2" y1="12" x2="5" y2="12" stroke="currentColor" stroke-width="1.5"/>
-          <line x1="19" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="1.5"/>
-          <line x1="4.9" y1="4.9" x2="7" y2="7" stroke="currentColor" stroke-width="1.5"/>
-          <line x1="17" y1="17" x2="19.1" y2="19.1" stroke="currentColor" stroke-width="1.5"/>
-          <line x1="4.9" y1="19.1" x2="7" y2="17" stroke="currentColor" stroke-width="1.5"/>
-          <line x1="17" y1="7" x2="19.1" y2="4.9" stroke="currentColor" stroke-width="1.5"/>
-        </svg>
+        <img class="theme-icon sun-icon icon-mono" src="images/theme-sun.png" alt="">
         <!-- moon icon, shown in light mode (click to go dark) -->
-        <svg class="theme-icon moon-icon" viewBox="0 0 24 24">
-          <path d="M20 14.5c-1 0.4-2 0.6-3 0.6-4.4 0-8-3.6-8-8 0-1.3 0.3-2.5 0.8-3.6C6.1 4.6 3.5 8 3.5 12c0 4.7 3.8 8.5 8.5 8.5 3.5 0 6.5-2.1 7.8-5.1-0.3 0.1-0.5 0.1-0.8 0.1z" fill="currentColor"/>
-        </svg>
+        <img class="theme-icon moon-icon icon-mono" src="images/theme-moon.png" alt="">
       </button>
     </div>
   </div>
 </header>
 
 <main id="main">
+
+  <div id="resume-view">
 
   <!-- INTRO SECTION -->
   <section class="hero">
@@ -260,6 +255,21 @@
 
         <div class="entry">
           <div class="entry-head">
+            <p class="entry-title">AWS Cloud Resume Challenge <span class="entry-org">· This site</span></p>
+          </div>
+          <ul class="bullets">
+            <li>Built and deployed this resume site itself as a fully serverless AWS application - static frontend on S3 and CloudFront with a custom domain through Route 53, backend infrastructure defined entirely as code with AWS SAM/CloudFormation.</li>
+            <li>Built a real-time visitor counter using API Gateway WebSockets, Lambda, and DynamoDB Streams, so the count updates live across every open tab instead of only on page refresh.</li>
+            <li>Set up CI/CD with GitHub Actions so every push automatically tests and redeploys the backend, and syncs the frontend to S3 with a CloudFront cache invalidation.</li>
+            <li>Curious how it's actually built? <a href="#" id="view-breakdown-link">See the full technical breakdown</a>, or view the source on <a href="#" target="_blank" rel="noopener">GitHub</a>. <!-- TODO: same repo URL as the "View on GitHub" button up top, once it's public --></li>
+          </ul>
+          <ul class="tag-list entry-skills">
+            <li>S3</li><li>CloudFront</li><li>Route 53</li><li>Lambda</li><li>DynamoDB</li><li>API Gateway</li><li>CloudFormation/SAM</li><li>GitHub Actions</li><li>Python</li>
+          </ul>
+        </div>
+
+        <div class="entry">
+          <div class="entry-head">
             <p class="entry-title">"Mimid" <span class="entry-org">· AWS Chrome Extension</span></p>
           </div>
           <ul class="bullets">
@@ -366,9 +376,121 @@
 
   </div>
 
+  </div> <!-- /#resume-view -->
+
+  <!-- TECHNICAL BREAKDOWN
+       Hidden by default - script.js shows this and hides #resume-view
+       when the "Technical Breakdown" button in the top bar is clicked,
+       and swaps back the same way on a second click. -->
+  <div id="breakdown-view" hidden>
+
+    <section class="hero">
+      <p class="eyebrow">How it's built</p>
+      <h2 class="breakdown-title">Technical Breakdown</h2>
+      <p class="hero-about">
+        A plain-language rundown of every service this project uses, and what
+        it's actually doing. If you're skimming this before an interview or a
+        code review, this is the short version of each piece — the full story
+        (including what broke along the way) is in the
+        <a href="#">blog post</a>.
+        <!-- TODO: point that link at the real blog post once it's published -->
+      </p>
+    </section>
+
+    <div class="content-grid">
+      <div class="main-col">
+
+        <div class="subsection">
+          <p class="section-eyebrow">Frontend delivery</p>
+          <h2>Getting the site to a browser</h2>
+          <dl class="breakdown-list">
+            <div class="breakdown-item">
+              <dt>S3</dt>
+              <dd>Amazon's file storage service. This is where the actual HTML, CSS, JS, and image files for the resume site live. It's not serving them directly to visitors, though — that's CloudFront's job.</dd>
+            </div>
+            <div class="breakdown-item">
+              <dt>CloudFront</dt>
+              <dd>a content delivery network (CDN). It sits in front of the S3 bucket, caches the site at edge locations around the world so it loads fast wherever a visitor is, and handles HTTPS for the domain. The S3 bucket itself stays private — only CloudFront is allowed to read from it.</dd>
+            </div>
+            <div class="breakdown-item">
+              <dt>Route 53</dt>
+              <dd>AWS's DNS service. It points the domain name at CloudFront, and it's also where the domain itself was registered.</dd>
+            </div>
+            <div class="breakdown-item">
+              <dt>Certificate Manager (ACM)</dt>
+              <dd>issues the free TLS certificate CloudFront uses to serve the site over HTTPS instead of plain HTTP.</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="subsection">
+          <p class="section-eyebrow">The visitor counter</p>
+          <h2>Where the number comes from</h2>
+          <dl class="breakdown-list">
+            <div class="breakdown-item">
+              <dt>API Gateway</dt>
+              <dd>the entry point the browser actually talks to. This project uses two kinds side by side: a REST API (the original counter) and a WebSocket API (the real-time version) — they work quite differently under the hood even though they're the same underlying AWS service.</dd>
+            </div>
+            <div class="breakdown-item">
+              <dt>Lambda</dt>
+              <dd>the actual code that runs when a request comes in. No server to manage, and it only runs — and only costs anything — while it's handling a request. There are three functions here: one for the REST counter, and two for the WebSocket version.</dd>
+            </div>
+            <div class="breakdown-item">
+              <dt>DynamoDB</dt>
+              <dd>a NoSQL database. Here it stores exactly one number — the visitor count — plus, for the real-time version, a list of which WebSocket connections are currently open.</dd>
+            </div>
+            <div class="breakdown-item">
+              <dt>DynamoDB Streams</dt>
+              <dd>fires an event every time something changes in a table. The real-time counter is built around this: every time the count updates, the stream triggers a Lambda that pushes the new number out to every open connection.</dd>
+            </div>
+          </dl>
+        </div>
+
+      </div>
+
+      <aside class="side-col">
+        <div class="subsection">
+          <p class="section-eyebrow">Behind the scenes</p>
+          <h2>Deploying and staying safe</h2>
+          <dl class="breakdown-list">
+            <div class="breakdown-item">
+              <dt>IAM</dt>
+              <dd>controls who — or what — is allowed to do what in the AWS account. Every Lambda, every deploy, every API call goes through an IAM permission check.</dd>
+            </div>
+            <div class="breakdown-item">
+              <dt>CloudFormation / SAM</dt>
+              <dd>Infrastructure as Code. The entire backend is defined in one YAML template and deployed with a single command, so it can be rebuilt from scratch if it ever needs to be.</dd>
+            </div>
+            <div class="breakdown-item">
+              <dt>GitHub Actions</dt>
+              <dd>deploys the site automatically on every push — no touching the AWS console by hand.</dd>
+            </div>
+            <div class="breakdown-item">
+              <dt>AWS Budgets</dt>
+              <dd>a cost safety net. Sends an email alert if spending crosses a threshold, so nothing runs away unnoticed.</dd>
+            </div>
+          </dl>
+        </div>
+      </aside>
+
+    </div>
+
+    <div class="subsection breakdown-diagram-section">
+      <p class="section-eyebrow">Architecture</p>
+      <h2>How it fits together</h2>
+      <p class="hero-about">
+        The static site (left) and the two versions of the visitor counter (middle
+        and right) are independent of each other — the counter could be swapped out
+        entirely without touching the resume content itself. Both counter versions
+        currently run side by side; the blog post covers why.
+      </p>
+      <img class="diagram-img" src="images/architecture-diagram.svg" alt="Architecture diagram: Route 53 and CloudFront deliver the static site from S3; a REST API Gateway and a WebSocket API Gateway each front a Lambda function that read and write a DynamoDB visitor count table; a DynamoDB Stream on that table triggers a third Lambda that pushes live updates to open WebSocket connections; GitHub Actions deploys both the frontend and backend.">
+    </div>
+
+  </div> <!-- /#breakdown-view -->
+
   <!-- FOOTER / CONTACT -->
   <footer id="contact" class="footer">
-    <p class="footer-line">Let's talk cloud.</p>
     <ul class="footer-contact">
       <li><a href="mailto:keeganelgin@gmail.com">keeganelgin@gmail.com</a></li>
       <li><a href="tel:+16047202841">(604) 720-2841</a></li>

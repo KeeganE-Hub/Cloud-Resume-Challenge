@@ -5,12 +5,11 @@ Transform: AWS::Serverless-2016-10-31
 # explanation of how everything fits together lives here as a comment
 # instead, where there's no length limit at all.
 #
-# This stack runs BOTH the original REST counter (Part 3) and the new
-# real-time WebSocket counter (Part 8) side by side. That lets the
-# live site keep working off the REST endpoint while the WebSocket
-# path is still being set up and tested. Once you've confirmed the
-# WebSocket version works end-to-end, the REST section below can be
-# deleted (see the comment above VisitorCountFunction).
+# This stack runs the real-time WebSocket counter (Part 8) as the
+# active version. The original REST counter (Part 3) is still in this
+# file for reference/backup, but its resources are commented out, so
+# it isn't actually deployed - uncomment it to bring it back if the
+# WebSocket version ever needs a fallback.
 #
 # How the WebSocket path fits together:
 #   1. A visitor's browser opens a WebSocket connection -> API Gateway
@@ -24,8 +23,8 @@ Transform: AWS::Serverless-2016-10-31
 #      just removes their connection ID - it does NOT decrement the
 #      count, since someone leaving isn't "undoing" their visit.
 Description: >
-  Cloud Resume Challenge backend - REST counter (Part 3) and real-time
-  WebSocket counter (Part 8) running side by side during the transition.
+  Cloud Resume Challenge backend - real-time WebSocket counter (Part 8)
+  active, REST counter (Part 3) kept commented out as a backup.
 
 Globals:
   Function:
@@ -76,51 +75,50 @@ Resources:
         Enabled: true
 
   # ---------------------------------------------------------------
-  # REST API (Part 3) - kept alongside the WebSocket version below
-  # on purpose, so the live counter keeps working while the
-  # WebSocket setup is still in progress. Both write to the same
-  # VisitorCountTable, so the count stays consistent either way.
-  # Safe to delete this whole section (and app.py) once you've
-  # confirmed the WebSocket version works end-to-end.
+  # REST API (Part 3) - COMMENTED OUT, not deployed anymore.
+  # Part 8 (the WebSocket version below) is confirmed working, so this
+  # is kept around only as a backup to fall back to if needed - not
+  # actively running. Uncomment VisitorCountFunction and VisitorCountApi
+  # below (and the ApiUrl output further down) to bring it back.
   # ---------------------------------------------------------------
 
-  VisitorCountFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: resume-visitor-count-fn
-      Handler: app.lambda_handler
-      CodeUri: src/
-      Environment:
-        Variables:
-          TABLE_NAME: !Ref VisitorCountTable
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref VisitorCountTable
-      Events:
-        GetCount:
-          Type: Api
-          Properties:
-            RestApiId: !Ref VisitorCountApi
-            Path: /count
-            Method: GET
-        Preflight:
-          Type: Api
-          Properties:
-            RestApiId: !Ref VisitorCountApi
-            Path: /count
-            Method: OPTIONS
+#   VisitorCountFunction:
+#     Type: AWS::Serverless::Function
+#     Properties:
+#       FunctionName: resume-visitor-count-fn
+#       Handler: app.lambda_handler
+#       CodeUri: src/
+#       Environment:
+#         Variables:
+#           TABLE_NAME: !Ref VisitorCountTable
+#       Policies:
+#         - DynamoDBCrudPolicy:
+#             TableName: !Ref VisitorCountTable
+#       Events:
+#         GetCount:
+#           Type: Api
+#           Properties:
+#             RestApiId: !Ref VisitorCountApi
+#             Path: /count
+#             Method: GET
+#         Preflight:
+#           Type: Api
+#           Properties:
+#             RestApiId: !Ref VisitorCountApi
+#             Path: /count
+#             Method: OPTIONS
 
-  VisitorCountApi:
-    Type: AWS::Serverless::Api
-    Properties:
-      Name: resume-visitor-count-api
-      StageName: prod
-      # No Cors property here on purpose - the Lambda itself already
-      # handles the OPTIONS preflight request and returns the CORS
-      # headers (see CORS_HEADERS in app.py). Setting Cors here too
-      # would make SAM try to create its own OPTIONS handling on top
-      # of that, which collides with the "Preflight" event above and
-      # breaks the deploy.
+#   VisitorCountApi:
+#     Type: AWS::Serverless::Api
+#     Properties:
+#       Name: resume-visitor-count-api
+#       StageName: prod
+#       # No Cors property here on purpose - the Lambda itself already
+#       # handles the OPTIONS preflight request and returns the CORS
+#       # headers (see CORS_HEADERS in app.py). Setting Cors here too
+#       # would make SAM try to create its own OPTIONS handling on top
+#       # of that, which collides with the "Preflight" event above and
+#       # breaks the deploy.
 
   # ---------------------------------------------------------------
   # Lambda functions (WebSocket version - Part 8)
@@ -258,11 +256,14 @@ Resources:
       StageName: prod
 
 Outputs:
-  ApiUrl:
-    Description: "REST endpoint (Part 3) - the one your live site is probably still using right now"
-    Value: !Sub "https://${VisitorCountApi}.execute-api.${AWS::Region}.amazonaws.com/prod/count"
+  # ApiUrl (Part 3) is commented out along with VisitorCountFunction/
+  # VisitorCountApi above - this would fail to resolve anyway since
+  # those resources no longer exist in this template.
+  # ApiUrl:
+  #   Description: "REST endpoint (Part 3) - kept as a backup, not active"
+  #   Value: !Sub "https://${VisitorCountApi}.execute-api.${AWS::Region}.amazonaws.com/prod/count"
   WebSocketUrl:
-    Description: "WebSocket endpoint (Part 8) - switch script.js over to this once it's tested and working"
+    Description: "WebSocket endpoint (Part 8) - this is the one script.js actually uses"
     Value: !Sub "wss://${WebSocketApi}.execute-api.${AWS::Region}.amazonaws.com/prod"
   VisitorTableName:
     Description: "DynamoDB table name for the visitor count"
