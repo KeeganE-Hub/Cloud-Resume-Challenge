@@ -39,9 +39,10 @@
   --body-font: 'IBM Plex Sans', sans-serif;
   --mono-font: 'IBM Plex Mono', monospace;
 
-  /* was 880px - bumped wider so the resume text isn't so squeezed into
-     the center of the screen on a normal desktop window */
-  --page-width: 1180px;
+  /* was 880px, then 1180px - bumped again so the wider sidebar (360px)
+     doesn't eat into the main column's width. Main column actually
+     gains a bit of room too, not just holds steady. */
+  --page-width: 1280px;
 }
 
 /* ---- light mode colors - kicks in when the toggle button sets
@@ -531,7 +532,7 @@ button:focus-visible {
   padding: 2.75rem 1.5rem;
   border-top: 1px solid var(--border-color);
   display: grid;
-  grid-template-columns: 1fr 300px; /* 300px sidebar is a layout choice, not type - stays fixed */
+  grid-template-columns: 1fr 360px; /* widened from 300px - "Outside of work" was reading cramped at the old width */
   gap: 3rem;
   align-items: start;
 }
@@ -748,6 +749,9 @@ transition line on .cert-card above)
 
 .bullets {
   margin: 0;
+  /* offsets the description from the entry title above it, like an
+     indented bullet point minus the bullet marker itself */
+  padding-left: 1.25rem;
   font-size: 0.906rem;
 }
 
