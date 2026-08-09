@@ -1,0 +1,99 @@
+# AWS Cloud Resume Challenge — Keegan Elgin
+
+My resume, built as a real serverless AWS application instead of a static file — completed as part of the [Cloud Resume Challenge](https://cloudresumechallenge.dev/).
+
+**Live site:** [yourdomain.com](#) <!-- TODO: fill in the real domain once it's live -->
+
+## About this project
+
+This isn't just a resume hosted online — it's a small full-stack AWS application. The frontend is a static site served over HTTPS through a CDN, and the "visitor counter" you'll see on it is backed by a real-time backend: every visit increments a count in a database, and a change stream pushes the updated number out to every other open tab live, no page refresh needed.
+
+Click the **Technical Breakdown** button in the site's own nav bar for a plain-language walkthrough of every service used and why — no need to leave the page.
+
+## Highlights
+
+- Frontend deployed to **S3 + CloudFront**, with a custom domain through **Route 53** and a free TLS certificate from **ACM**
+- Real-time visitor counter built on a **WebSocket API Gateway**, two **Lambda** functions, and a **DynamoDB Stream** — the count updates live across every open browser tab
+- The original REST-based counter (the base version of the challenge) is kept in the codebase as a commented-out backup rather than deleted, alongside its own test suite
+- Entire backend defined as code with **AWS SAM** — one command rebuilds the whole stack from scratch
+- **CI/CD via GitHub Actions** — separate frontend/backend workflows that only trigger on changes to their own folder, so a CSS tweak doesn't trigger a backend redeploy and vice versa
+- Backend covered by a **pytest** suite using **moto** to mock AWS services, so tests run without touching real infrastructure
+- Light/dark theme toggle, an in-page technical breakdown view, and a "business card" contact popup — all built with plain HTML/CSS/JS, no frontend framework
+
+## Technologies used
+
+**Frontend**
+- HTML, CSS, JavaScript — no framework
+- Responsive layout, light/dark theme support
+
+**AWS**
+- Amazon S3 — static site hosting
+- Amazon CloudFront — CDN + HTTPS
+- Amazon Route 53 — DNS and domain registration
+- AWS Certificate Manager (ACM) — TLS certificate
+- Amazon API Gateway — REST (backup) and WebSocket (active)
+- AWS Lambda — Python 3.14
+- Amazon DynamoDB + DynamoDB Streams
+- AWS IAM
+- AWS Budgets — cost monitoring/alerts
+
+**Infrastructure & tooling**
+- AWS SAM / CloudFormation — Infrastructure as Code
+- GitHub Actions — CI/CD
+- pytest + moto — backend unit testing
+- boto3 — AWS SDK for Python
+
+## File structure
+
+```
+Cloud-Resume-Challenge/
+├── frontend/
+│   ├── index.html
+│   ├── styles.css
+│   ├── script.js
+│   └── images/
+│       ├── architecture-diagram.svg
+│       ├── email.png, phone.png, location.png
+│       ├── github.png, linkedin.png
+│       └── theme-sun.png, theme-moon.png
+│
+├── backend/
+│   ├── template.yaml           # SAM/CloudFormation - the whole backend as code
+│   ├── src/
+│   │   ├── app.py                  # REST counter (Part 3) - inactive backup
+│   │   ├── dbupdater.py            # WebSocket $connect/$disconnect handler
+│   │   ├── dbstreamprocessor.py    # pushes live count updates over the socket
+│   │   └── requirements.txt
+│   └── tests/
+│       ├── test_app.py
+│       ├── test_dbupdater.py
+│       └── test_dbstreamprocessor.py
+│
+├── .github/
+│   └── workflows/
+│       ├── frontend-deploy.yaml    # syncs frontend/ to S3, invalidates CloudFront
+│       └── backend-deploy.yaml     # runs pytest, then sam deploy
+│
+├── docs/
+│   ├── blog-post.docx
+│   ├── technical-breakdown.docx
+│   └── mockups/
+│       └── architecture-mockup.svg
+│
+└── iam-policy.json              # example least-privilege IAM policy (reference)
+```
+
+## Architecture
+
+![Architecture diagram](frontend/images/architecture-diagram.svg)
+
+## Documentation
+
+- **Blog post:** [link](#) <!-- TODO: add once published -->
+- **Technical breakdown:** built into the live site (nav bar → *Technical Breakdown*), or see `docs/technical-breakdown.docx`
+
+## Contact
+
+- GitHub: [KeeganE-Hub](https://github.com/KeeganE-Hub)
+- LinkedIn: [linkedin.com/in/keeganelgin](https://linkedin.com/in/keeganelgin)
+- Email: keeganelgin@gmail.com
