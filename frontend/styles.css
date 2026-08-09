@@ -748,16 +748,14 @@ transition line on .cert-card above)
 
 .bullets {
   margin: 0;
-  padding-left: 1.25rem;
-}
-
-.bullets li {
   font-size: 0.906rem;
-  margin-bottom: 0.375rem;
 }
 
-.bullets li:last-child {
-  margin-bottom: 0;
+/* when an entry has more than one paragraph (like the Cloud Resume
+   Challenge project, which adds a second paragraph with links),
+   this adds a bit of breathing room between them */
+.bullets + .bullets {
+  margin-top: 0.5rem;
 }
 
 /* the little skills-used tags under an experience/project entry -
