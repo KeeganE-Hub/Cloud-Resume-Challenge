@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths:
       - "frontend/**"
-      - ".github/workflows/frontend-deploy.yml"
+      - ".github/workflows/frontend-deploy.yaml"
 
 jobs:
   deploy:
