@@ -223,6 +223,30 @@ function isFilledIn(url) {
 //   }
 // }
 
+// turns 1 into "1st", 2 into "2nd", 11 into "11th", 21 into "21st", etc.
+// the 11/12/13 check exists because those break the normal 1/2/3 pattern -
+// "11th" not "11st", same for 12th and 13th
+function ordinalSuffix(n) {
+  const lastDigit = n % 10;
+  const lastTwoDigits = n % 100;
+
+  if (lastDigit === 1 && lastTwoDigits !== 11) return n + "st";
+  if (lastDigit === 2 && lastTwoDigits !== 12) return n + "nd";
+  if (lastDigit === 3 && lastTwoDigits !== 13) return n + "rd";
+  return n + "th";
+}
+
+// fills in the hover tooltip text with the current count, so it always
+// matches whatever number is actually showing on screen
+function updateVisitorTooltip(count) {
+  const tooltip = document.getElementById("visitor-tooltip");
+  if (!tooltip) return;
+
+  tooltip.innerHTML =
+    "Congratulations, you're the " + ordinalSuffix(count) + " visitor!<br><br>" +
+    "This number is pulled from an Amazon DynamoDB Stream, so if you open up a new page you can see the number update on both.";
+}
+
 function connectVisitorCounterViaWebSocket(counterSpan) {
   const socket = new WebSocket(WEBSOCKET_URL);
 
@@ -232,6 +256,7 @@ function connectVisitorCounterViaWebSocket(counterSpan) {
     try {
       const data = JSON.parse(event.data);
       counterSpan.textContent = data.count;
+      updateVisitorTooltip(data.count);
     } catch (error) {
       console.error("Couldn't read the visitor count message:", error);
     }

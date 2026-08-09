@@ -476,10 +476,44 @@ button:focus-visible {
 }
 
 .visitor-counter {
+  position: relative;
+  display: inline-block;
   font-family: var(--mono-font);
   font-size: 0.781rem;
   color: var(--text-faint);
   margin: 0;
+  cursor: default;
+}
+
+/* small hover card explaining where the live count actually comes
+   from - hidden until you hover the "Visitors: N" line itself.
+   Text content is written in by script.js each time the count
+   changes, so the ordinal number in here always matches what's
+   currently on screen. */
+.visitor-tooltip {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 15;
+  width: 220px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.75rem 0.875rem;
+  font-family: var(--body-font);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.visitor-counter:hover .visitor-tooltip {
+  opacity: 1;
+  visibility: visible;
 }
 
 /* ---------------- main content + sidebar ---------------- */

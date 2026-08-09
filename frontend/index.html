@@ -88,8 +88,8 @@
     </nav>
 
     <div class="topbar-actions">
-      <!-- TODO: swap this href for the real repo URL once it's public -->
-      <a class="repo-link-btn" href="#" target="_blank" rel="noopener">View on GitHub</a>
+      <!-- repo link filled in -->
+      <a class="repo-link-btn" href="https://github.com/KeeganE-Hub/Cloud-Resume-Challenge" target="_blank" rel="noopener">View on GitHub</a>
 
       <!-- swaps the middle of the page between the resume and the
            technical breakdown - see script.js for the toggle logic -->
@@ -147,7 +147,13 @@
     </ul>
 
     <!-- this number gets filled in by script.js once the backend is set up -->
-    <p class="visitor-counter">visitors: <span id="visitor-count">…</span></p>
+    <!-- this number gets filled in by script.js once the backend is set up.
+         The tooltip text is also written dynamically by script.js each time
+         the count changes, so it always shows the current number. -->
+    <p class="visitor-counter">
+      Visitors: <span id="visitor-count">…</span>
+      <span class="visitor-tooltip" id="visitor-tooltip">This number is pulled from an Amazon DynamoDB Stream, so if you open up a new page you can see the number update on both.</span>
+    </p>
   </section>
 
   <!-- MAIN CONTENT + SIDEBAR
@@ -186,11 +192,11 @@
             <span class="status-pill status-stopped">Aug – Nov 2022</span>
           </div>
           <ul class="bullets">
-            <li>Designed and built a responsive chatbot using Azure Cognitive Services, integrated with social media platforms (Facebook, Slack).</li>
-            <li>Implemented a custom HTML interface.</li>
+            <li>Built and deployed a responsive chatbot using Azure Cognitive Services and Azure Bot Services, with integrations for Facebook and Slack.</li>
+            <li>Developed a custom HTML interface and wrote a business plan outlining the project's purpose, implementation, and potential use cases.</li>
           </ul>
           <ul class="tag-list entry-skills">
-            <li>Azure</li><li>Cognitive Services</li><li>HTML</li>
+            <li>Azure</li><li>Azure Cognitive Services</li><li>Azure Bot Services</li><li>HTML</li><li>Scrum</li>
           </ul>
         </div>
 
@@ -200,11 +206,11 @@
             <span class="status-pill status-stopped">Sept – Dec 2021</span>
           </div>
           <ul class="bullets">
-            <li>Helped build a web-based audio room app for educators with recording and sharing features.</li>
-            <li>Focused on backend development with Node.js and React, optimizing audio compression and subtitle generation with third-party libraries.</li>
+            <li>Helped build a web-based audio room application for educators, including recording and sharing features.</li>
+            <li>Worked with Node.js and React on the backend and optimized audio compression and subtitle generation using third-party libraries.</li>
           </ul>
           <ul class="tag-list entry-skills">
-            <li>Node.js</li><li>React</li>
+            <li>Node.js</li><li>React</li><li>JavaScript</li><li>Web Development</li><li>Backend</li><li>APIs</li><li>Scrum</li>
           </ul>
         </div>
 
@@ -214,11 +220,11 @@
             <span class="status-pill status-stopped">May – June 2021</span>
           </div>
           <ul class="bullets">
-            <li>Designed and implemented a multi-view stock monitoring interface, improving usability and data viewing for traders.</li>
-            <li>Built the backend functionality using Python (Django) so that users could quickly pull required information from an Azure database.</li>
+            <li>Built a multi-view stock monitoring interface and backend features that allowed users to quickly retrieve information from an Azure database.</li>
+            <li>Worked primarily with Python and Django while improving the usability and presentation of stock data.</li>
           </ul>
           <ul class="tag-list entry-skills">
-            <li>Python</li><li>Django</li><li>Databases</li><li>Azure</li>
+            <li>Python</li><li>Django</li><li>Azure</li><li>SQL</li><li>Backend</li><li>Databases</li>
           </ul>
         </div>
 
@@ -229,22 +235,25 @@
             <span class="status-pill status-running">2019 – 2021, Nov 2024 – present</span>
           </div>
           <ul class="bullets">
-            <li>Government retail job, providing reliable and accountable customer service in a fast-paced environment.</li>
+            <li>Government employee providing customer service in a fast-paced retail environment.</li>
+            <li>Trusted to contact IT and handle basic technical issues - restarting computers, fixing PIN pad connectivity - and provided a workaround for a SAML authentication issue affecting training laptops.</li>
+          </ul>
+          <ul class="tag-list entry-skills">
+            <li>Customer Service</li><li>Basic IT Support</li>
           </ul>
         </div>
 
         <div class="entry">
           <div class="entry-head">
-            <p class="entry-title">Discord Server Admin <span class="entry-org">· Community server (26,000+ members)</span></p>
-            <!-- no dates given for this one, so no status pill - same as how the
-                 project entries below don't have one either -->
+            <p class="entry-title">Admin <span class="entry-org">· Online Community (26,000+ members)</span></p>
+            <span class="status-pill status-running">Ongoing</span>
           </div>
           <ul class="bullets">
-            <li>Managed moderation bots and acted as the communication link between the moderation team and the server owner for a community of 26,000+ members.</li>
-            <li>Proactively identified and fixed an issue in the server's ticketing system, significantly improving its effectiveness.</li>
+            <li>Manage and coordinate a 26,000+ member online community, working with moderators to handle issues and maintain the server.</li>
+            <li>Bring forward and implement new Discord features and fix issues with server bots.</li>
           </ul>
           <ul class="tag-list entry-skills">
-            <li>Discord</li><li>Bot Management</li><li>Moderation</li>
+            <li>Community Management</li><li>Administration</li><li>Problem Solving</li><li>Communication</li>
           </ul>
         </div>
       </div>
@@ -261,7 +270,7 @@
             <li>Built and deployed this resume site itself as a fully serverless AWS application - static frontend on S3 and CloudFront with a custom domain through Route 53, backend infrastructure defined entirely as code with AWS SAM/CloudFormation.</li>
             <li>Built a real-time visitor counter using API Gateway WebSockets, Lambda, and DynamoDB Streams, so the count updates live across every open tab instead of only on page refresh.</li>
             <li>Set up CI/CD with GitHub Actions so every push automatically tests and redeploys the backend, and syncs the frontend to S3 with a CloudFront cache invalidation.</li>
-            <li>Curious how it's actually built? <a href="#" id="view-breakdown-link">See the full technical breakdown</a>, or view the source on <a href="#" target="_blank" rel="noopener">GitHub</a>. <!-- TODO: same repo URL as the "View on GitHub" button up top, once it's public --></li>
+            <li>Curious how it's actually built? <a href="#" id="view-breakdown-link">See the full technical breakdown</a>, or view the source on <a href="https://github.com/KeeganE-Hub/Cloud-Resume-Challenge" target="_blank" rel="noopener">GitHub</a>.</li>
           </ul>
           <ul class="tag-list entry-skills">
             <li>S3</li><li>CloudFront</li><li>Route 53</li><li>Lambda</li><li>DynamoDB</li><li>API Gateway</li><li>CloudFormation/SAM</li><li>GitHub Actions</li><li>Python</li>
@@ -270,39 +279,39 @@
 
         <div class="entry">
           <div class="entry-head">
-            <p class="entry-title">"Mimid" <span class="entry-org">· AWS Chrome Extension</span></p>
+            <p class="entry-title">Mimid <span class="entry-org">· AWS Chrome Extension</span></p>
           </div>
           <ul class="bullets">
-            <li>Built a Chrome extension enabling text-to-speech playback from any selected text using AWS Polly.</li>
-            <li>Set up serverless infrastructure using AWS Lambda, API Gateway, and S3 for scalable audio generation and storage.</li>
+            <li>Built a Chrome extension that converts selected text to speech using AWS Polly.</li>
+            <li>Created serverless infrastructure using Lambda, API Gateway, and S3 to generate MP3s through Polly and store audio.</li>
           </ul>
           <ul class="tag-list entry-skills">
-            <li>AWS Polly</li><li>Lambda</li><li>API Gateway</li><li>S3</li>
+            <li>AWS</li><li>Lambda</li><li>S3</li><li>API Gateway</li><li>Polly</li><li>JavaScript</li><li>Serverless</li>
           </ul>
         </div>
 
         <div class="entry">
           <div class="entry-head">
-            <p class="entry-title">"Skip The Door" <span class="entry-org">· Web and mobile application</span></p>
+            <p class="entry-title">Skip The Door <span class="entry-org">· Web &amp; Mobile Application</span></p>
           </div>
           <ul class="bullets">
-            <li>Led development of a searchable store item listing platform, managing workloads, designing the query system, and building features with HTML, CSS, JavaScript, Firebase, and Google Sheets API.</li>
+            <li>Led development of a searchable store item listing platform, managing workloads, designing the query system, and building features using HTML, CSS, JavaScript, Firebase, and the Google Sheets API.</li>
           </ul>
           <ul class="tag-list entry-skills">
-            <li>HTML</li><li>CSS</li><li>JavaScript</li><li>Firebase</li><li>Google Sheets API</li>
+            <li>JavaScript</li><li>HTML/CSS</li><li>Firebase</li><li>APIs</li><li>Web Development</li><li>Mobile</li>
           </ul>
         </div>
 
         <div class="entry">
           <div class="entry-head">
-            <p class="entry-title">"Whirled Avatars" <span class="entry-org">· Java Project</span></p>
+            <p class="entry-title">Wyvern / Whirled Avatars <span class="entry-org">· Java Project</span></p>
           </div>
           <ul class="bullets">
-            <li>Edited Java source files and bitmap image assets to create custom avatar characters for an online game, which other players could purchase.</li>
-            <li>Built and compiled the project on Linux, using Apache Ant from the command line.</li>
+            <li>As a young teen, modified Java source files and bitmap assets to create custom avatars for Wyvern, a game within the Whirled virtual world.</li>
+            <li>Used Linux and Ant from the command line to compile the project, and sold the finished avatars through the Whirled shop.</li>
           </ul>
           <ul class="tag-list entry-skills">
-            <li>Java</li><li>Ant</li><li>Linux</li>
+            <li>Java</li><li>Linux</li><li>Ant</li><li>Command Line</li><li>Bitmaps</li><li>Game Development</li>
           </ul>
         </div>
       </div>
@@ -370,6 +379,18 @@
             </ul>
           </div>
         </div>
+      </div>
+
+      <div id="outside-work" class="subsection">
+        <p class="section-eyebrow">Beyond the resume</p>
+        <h2>Outside of work</h2>
+        <p class="hero-about">
+          I stay creative and collaborative through my hobbies. I organize and run
+          Dungeons &amp; Dragons games online, creating adventures and coordinating
+          games for a group of friends. I go to dance classes, learning and adapting
+          with new dance partners. I also regularly do daily quizzes, working my way
+          through trivia, logic puzzles, geography, and other odd quizzes.
+        </p>
       </div>
 
     </aside>
