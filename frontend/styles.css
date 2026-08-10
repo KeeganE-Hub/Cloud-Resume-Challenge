@@ -163,6 +163,7 @@ button:focus-visible {
   color: var(--text-muted);
   text-decoration: none;
   font-family: var(--mono-font);
+  line-height: 1;
   transition: color 0.15s ease;
 }
 
@@ -246,6 +247,12 @@ button:focus-visible {
 /* wraps the Contact button + its popup card so the card can be
    positioned relative to the button rather than the whole page */
 .contact-popover-wrap {
+  /* makes the wrapper itself center its contents the same way the
+     plain <a> links around it are centered - without this, the div's
+     own default block-level box model was a small part of why Contact
+     sat at a slightly different vertical position than the others */
+  display: flex;
+  align-items: center;
   position: relative;
 }
 
@@ -256,6 +263,12 @@ button:focus-visible {
   background: none;
   border: none;
   padding: 0;
+  /* buttons don't inherit line-height the same predictable way plain
+     text/links do across browsers - this is the actual fix for the
+     "Contact sits slightly off from the others" issue: forcing it to
+     match line-height: 1 removes the inconsistent extra vertical
+     space a <button> can carry by default */
+  line-height: 1;
   cursor: pointer;
   transition: color 0.15s ease;
 }
