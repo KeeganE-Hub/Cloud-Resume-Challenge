@@ -391,11 +391,21 @@
       <p class="eyebrow">How it's built</p>
       <h2 class="breakdown-title">Technical Breakdown</h2>
       <p class="hero-about">
-        A plain-language rundown of every service this project uses, and what
-        it's actually doing. If you're skimming this before an interview or a
-        code review, this is the short version of each piece.
+        A walkthrough of every service this project uses, what each one is
+        actually doing, and how the pieces connect to each other.
       </p>
     </section>
+
+    <!-- Called out on its own, near the top, rather than left as a
+         small hover-only detail - the live-updating count is one of
+         the more concrete things to point to in this whole project,
+         so it gets a proper highlight instead of being easy to miss. -->
+    <div class="breakdown-visitor-highlight">
+      <div class="breakdown-visitor-card">
+        <p class="breakdown-visitor-count">Visitors: <span id="visitor-count-breakdown">…</span></p>
+        <p class="breakdown-visitor-note">This number updates live, with no page refresh. A DynamoDB Stream fires every time it changes, which triggers a Lambda function that pushes the new value out to every open tab over a WebSocket connection — open this page in two tabs and watch it update in both.</p>
+      </div>
+    </div>
 
     <div class="content-grid">
       <div class="main-col">
@@ -485,7 +495,7 @@
         dashed arrows are reads or the live push back to the browser.
       </p>
       <div class="diagram-frame">
-        <img class="diagram-img" src="images/architecture-diagram.png" alt="Architecture diagram: Route 53 and CloudFront deliver the static site from S3; a WebSocket API Gateway fronts a Lambda function that writes to a DynamoDB visitor count table and a connections table; a DynamoDB Stream on the count table triggers a second Lambda that pushes live updates back to every open connection; GitHub Actions deploys both the frontend and backend.">
+        <img class="diagram-img" src="images/architecture-diagram.svg" alt="Architecture diagram: Route 53 and CloudFront deliver the static site from S3; a WebSocket API Gateway fronts a Lambda function that writes to a DynamoDB visitor count table and a connections table; a DynamoDB Stream on the count table triggers a second Lambda that pushes live updates back to every open connection; GitHub Actions deploys both the frontend and backend.">
       </div>
     </div>
 

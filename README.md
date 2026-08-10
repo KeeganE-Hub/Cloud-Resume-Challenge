@@ -44,6 +44,14 @@ Click the **Technical Breakdown** button in the site's own nav bar for a plain-l
 - pytest + moto — backend unit testing
 - boto3 — AWS SDK for Python
 
+## What's next
+
+Things worth doing beyond what's here now:
+- Replace the static IAM access keys in GitHub Secrets with OIDC federation, so deploys authenticate with short-lived credentials instead of long-lived ones.
+- Bring more of the manually-configured pieces (the S3 bucket policy, CloudFront, Route 53, ACM) into the SAM template, so the entire stack — not just the backend — is defined as code.
+- Containerize the backend.
+- Explore hosting on Kubernetes.
+
 ## File structure
 
 ```

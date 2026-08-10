@@ -1032,6 +1032,36 @@ transition line on .cert-card above)
   height: auto;
 }
 
+/* ---------------- breakdown view: highlighted visitor count ---------------- */
+
+.breakdown-visitor-highlight {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: 0 1.5rem 2rem;
+}
+
+.breakdown-visitor-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+}
+
+.breakdown-visitor-count {
+  font-family: var(--mono-font);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.breakdown-visitor-note {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
 /* ---------------- small screens ---------------- */
 
 @media (max-width: 860px) {
@@ -1122,30 +1152,34 @@ transition line on .cert-card above)
   }
 
   .topbar-nav {
-    gap: 0.55rem;
+    gap: 0.35rem;
   }
 
   .topbar-nav a,
   .contact-toggle {
-    font-size: 0.72rem;
+    /* shrunk further than the first pass at this - that one still
+       left Contact getting cut off / needing a scroll on real
+       narrow phones, so this leaves real margin instead of just
+       barely fitting on paper */
+    font-size: 0.6rem;
   }
 
   .topbar-links {
-    gap: 0.5rem;
+    gap: 0.35rem;
   }
 
   .repo-link-btn,
   .breakdown-toggle-btn {
-    font-size: 0.72rem;
-    padding: 0.4em 0.7em;
+    font-size: 0.6rem;
+    padding: 0.35em 0.6em;
   }
 
   .breakdown-toggle-btn {
-    /* was 24ch at the larger desktop font-size - recalculated for
-       this smaller mobile font-size, still with enough buffer to
-       cover "Technical Breakdown" (the longer of its two labels)
-       without visibly shifting width when the text changes */
-    min-width: 21ch;
+    /* was 24ch at desktop size, then 21ch - recalculated again for
+       this smaller font-size with real safety margin this time,
+       instead of just enough to cover "Technical Breakdown" with
+       nothing to spare */
+    min-width: 22ch;
   }
 
   .hero {

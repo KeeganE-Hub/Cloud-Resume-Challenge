@@ -378,6 +378,7 @@ function initVisitorCounter() {
   const counterSpans = [
     document.getElementById("visitor-count"),
     document.getElementById("visitor-count-desktop"),
+    document.getElementById("visitor-count-breakdown"),
   ].filter(Boolean); // drops any that aren't on the page for some reason
 
   if (counterSpans.length === 0) {
