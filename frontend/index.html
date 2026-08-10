@@ -491,12 +491,13 @@
       <p class="hero-about">
         The static site (left) and the visitor counter (right) are independent
         of each other — the counter could be swapped out entirely without
-        touching the resume content itself. Solid arrows are writes/invokes;
-        dashed arrows are reads or the live push back to the browser.
+        touching the resume content itself. GitHub Actions deploys the two
+        halves differently: the frontend syncs straight to S3, while the
+        backend deploys through AWS CloudFormation, which is what actually
+        provisions the Lambda functions, DynamoDB tables, and API Gateway
+        from the SAM template.
       </p>
-      <div class="diagram-frame">
-        <img class="diagram-img" src="images/architecture-diagram.svg" alt="Architecture diagram: Route 53 and CloudFront deliver the static site from S3; a WebSocket API Gateway fronts a Lambda function that writes to a DynamoDB visitor count table and a connections table; a DynamoDB Stream on the count table triggers a second Lambda that pushes live updates back to every open connection; GitHub Actions deploys both the frontend and backend.">
-      </div>
+      <img class="diagram-img" src="images/architecture-diagram.png" alt="Architecture diagram: Route 53 and CloudFront deliver the static site from S3; a WebSocket API Gateway fronts a Lambda function that writes to a DynamoDB visitor count table and a connections table; a DynamoDB Stream on the count table triggers a second Lambda that pushes live updates back to every open connection; GitHub Actions deploys the frontend directly to S3, and deploys the backend through AWS CloudFormation.">
     </div>
 
   </div> <!-- /#breakdown-view -->

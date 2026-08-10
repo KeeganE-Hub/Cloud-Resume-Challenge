@@ -10,6 +10,10 @@ This isn't just a resume hosted online — it's a small full-stack AWS applicati
 
 Click the **Technical Breakdown** button in the site's own nav bar for a plain-language walkthrough of every service used and why — no need to leave the page.
 
+## Architecture
+
+![Architecture diagram: Route 53 and CloudFront deliver the static site from S3; a WebSocket API Gateway fronts a Lambda function that writes to a DynamoDB visitor count table and a connections table; a DynamoDB Stream on the count table triggers a second Lambda that pushes live updates back to every open connection; GitHub Actions deploys the frontend directly to S3, and deploys the backend through AWS CloudFormation.](docs/architecture-diagram.png)
+
 ## Highlights
 
 - Frontend deployed to **S3 + CloudFront**, with a custom domain through **Route 53** and a free TLS certificate from **ACM**.

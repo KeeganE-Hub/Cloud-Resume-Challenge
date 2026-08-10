@@ -1018,18 +1018,13 @@ transition line on .cert-card above)
    style it's based on, which was drawn against white. Framing it in
    a light card here makes that read as a deliberate choice instead
    of a stray white rectangle sitting on the page's dark background. */
-.diagram-frame {
-  margin-top: 1.5rem;
-  background-color: #ffffff;
-  border-radius: 8px;
-  padding: 1rem;
-  border: 1px solid var(--border-color);
-}
-
 .diagram-img {
   display: block;
   width: 100%;
   height: auto;
+  margin-top: 1.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
 }
 
 /* ---------------- breakdown view: highlighted visitor count ---------------- */
