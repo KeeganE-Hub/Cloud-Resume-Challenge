@@ -1,4 +1,4 @@
-# AWS Cloud Resume Challenge — Keegan Elgin
+# AWS Cloud Resume Challenge
 
 My resume, built as a real serverless AWS application instead of a static file — completed as part of the [Cloud Resume Challenge](https://cloudresumechallenge.dev/).
 
@@ -65,6 +65,7 @@ Cloud-Resume-Challenge/
 │   ├── styles.css
 │   ├── script.js
 │   └── images/
+│       ├── architecture-diagram.png
 │       ├── email.png, phone.png, location.png
 │       ├── github.png, linkedin.png
 │       └── theme-sun.png, theme-moon.png
