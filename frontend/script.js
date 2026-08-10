@@ -115,6 +115,31 @@ const contactCard = document.getElementById("contact-card");
 function openContactCard() {
   contactCard.hidden = false;
   contactToggle.setAttribute("aria-expanded", "true");
+  positionContactCard();
+}
+
+// Reads where the Contact button actually is on screen right now, and
+// places the card directly under it - accounting for the button
+// possibly being in a different spot depending on screen width. Also
+// clamps the horizontal position so the card can never run off either
+// edge of the viewport, instead of just anchoring blindly to the
+// button and letting it overflow.
+function positionContactCard() {
+  const buttonRect = contactToggle.getBoundingClientRect();
+  const cardRect = contactCard.getBoundingClientRect();
+  const margin = 16; // minimum gap to leave between the card and the screen edge
+
+  let left = buttonRect.right - cardRect.width; // default: right edge of the card lines up with the right edge of the button
+
+  if (left + cardRect.width > window.innerWidth - margin) {
+    left = window.innerWidth - cardRect.width - margin;
+  }
+  if (left < margin) {
+    left = margin;
+  }
+
+  contactCard.style.left = left + "px";
+  contactCard.style.top = (buttonRect.bottom + 8) + "px";
 }
 
 function closeContactCard() {
