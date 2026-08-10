@@ -6,7 +6,7 @@ My resume, built as a real serverless AWS application instead of a static file â
 
 ## Architecture
 
-![Architecture diagram of the site: Route 53 and CloudFront deliver the static frontend from S3; a WebSocket API Gateway fronts two Lambda functions and two DynamoDB tables for the real-time visitor counter; GitHub Actions deploys the frontend directly to S3 and deploys the backend through AWS CloudFormation.](docs/architecture-diagram.png)
+![Architecture diagram of the site: Route 53 and CloudFront deliver the static frontend from S3; a WebSocket API Gateway fronts two Lambda functions and two DynamoDB tables for the real-time visitor counter; GitHub Actions deploys the frontend directly to S3 and deploys the backend through AWS CloudFormation.](frontend/images/architecture-diagram.png)
 
 ## About this project
 
