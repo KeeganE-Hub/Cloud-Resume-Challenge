@@ -412,18 +412,20 @@ button:focus-visible {
   height: 18px;
 }
 
-/* only one of the two icons shows at a time - script.js toggles this
-   by adding/removing the "light" attribute up on <html> */
-.moon-icon {
+/* only one of the two icons shows at a time, and it represents the
+   CURRENT theme (not what you'd switch to) - moon showing means it's
+   dark right now, sun showing means it's light right now. That's the
+   more intuitive convention, and the one people actually expect. */
+.sun-icon {
   display: none;
 }
 
 :root[data-theme="light"] .sun-icon {
-  display: none;
+  display: block;
 }
 
 :root[data-theme="light"] .moon-icon {
-  display: block;
+  display: none;
 }
 
 /* ---------------- resume view / technical breakdown view swap ---------------- */
