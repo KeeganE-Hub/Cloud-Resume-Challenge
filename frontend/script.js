@@ -175,48 +175,55 @@ document.addEventListener("keydown", function (event) {
 });
 
 
-// Visitor count bar tooltip
-// Same open/close pattern as the Contact popup above - click to
-// toggle, click elsewhere or press Escape to close. This used to be
-// a hover-only tooltip, but hover isn't really a thing on a phone,
-// so it's tap/click-toggled now, which works the same way on both
-// touch and mouse.
+// Visitor count tooltip - there are two instances of this (a desktop
+// one in the hero, a mobile one in the fixed bottom bar - CSS shows
+// only one at a time depending on screen width), so this is written
+// as a reusable setup function instead of duplicating the same
+// open/close/click-outside/Escape logic twice. Click to toggle, click
+// elsewhere or press Escape to close - this used to be hover-only,
+// but hover isn't really a thing on a phone, so both instances use
+// tap/click, which works the same way on touch and mouse alike.
+
+function setupVisitorTooltip(toggleEl, tooltipEl) {
+  function open() {
+    tooltipEl.hidden = false;
+    toggleEl.setAttribute("aria-expanded", "true");
+  }
+
+  function close() {
+    tooltipEl.hidden = true;
+    toggleEl.setAttribute("aria-expanded", "false");
+  }
+
+  toggleEl.addEventListener("click", function (event) {
+    event.stopPropagation();
+    if (tooltipEl.hidden) {
+      open();
+    } else {
+      close();
+    }
+  });
+
+  document.addEventListener("click", function (event) {
+    if (!tooltipEl.hidden && !toggleEl.contains(event.target)) {
+      close();
+    }
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && !tooltipEl.hidden) {
+      close();
+    }
+  });
+}
 
 const visitorBarToggle = document.getElementById("visitor-bar-toggle");
 const visitorTooltipEl = document.getElementById("visitor-tooltip");
+setupVisitorTooltip(visitorBarToggle, visitorTooltipEl);
 
-function openVisitorTooltip() {
-  visitorTooltipEl.hidden = false;
-  visitorBarToggle.setAttribute("aria-expanded", "true");
-}
-
-function closeVisitorTooltip() {
-  visitorTooltipEl.hidden = true;
-  visitorBarToggle.setAttribute("aria-expanded", "false");
-}
-
-visitorBarToggle.addEventListener("click", function (event) {
-  event.stopPropagation();
-
-  if (visitorTooltipEl.hidden) {
-    openVisitorTooltip();
-  } else {
-    closeVisitorTooltip();
-  }
-});
-
-document.addEventListener("click", function (event) {
-  const clickedInsideTooltip = visitorBarToggle.contains(event.target);
-  if (!visitorTooltipEl.hidden && !clickedInsideTooltip) {
-    closeVisitorTooltip();
-  }
-});
-
-document.addEventListener("keydown", function (event) {
-  if (event.key === "Escape" && !visitorTooltipEl.hidden) {
-    closeVisitorTooltip();
-  }
-});
+const visitorDesktopToggle = document.getElementById("visitor-desktop-toggle");
+const visitorTooltipDesktopEl = document.getElementById("visitor-tooltip-desktop");
+setupVisitorTooltip(visitorDesktopToggle, visitorTooltipDesktopEl);
 
 
 // Theme toggle
@@ -226,6 +233,16 @@ document.addEventListener("keydown", function (event) {
 // the site doesn't flash dark-then-light on reload.
 
 const themeButton = document.getElementById("theme-toggle");
+
+// the inline script in index.html's <head> already applied the saved
+// theme before this file even loads (that's what avoids a flash of
+// the wrong theme on page load) - this just syncs the switch's
+// aria-checked to match whatever it decided, since that happens
+// before the button exists to set it directly
+themeButton.setAttribute(
+  "aria-checked",
+  document.documentElement.getAttribute("data-theme") === "light" ? "true" : "false"
+);
 
 // Whatever the visitor picks gets saved, so it's still their choice
 // next time they load the page. If nothing's saved yet (first visit),
@@ -247,10 +264,12 @@ themeButton.addEventListener("click", function () {
     // switch back to dark mode
     document.documentElement.removeAttribute("data-theme");
     localStorage.setItem("theme", "dark");
+    themeButton.setAttribute("aria-checked", "false");
   } else {
     // switch to light mode
     document.documentElement.setAttribute("data-theme", "light");
     localStorage.setItem("theme", "light");
+    themeButton.setAttribute("aria-checked", "true");
   }
 });
 
@@ -305,18 +324,24 @@ function ordinalSuffix(n) {
   return n + "th";
 }
 
-// fills in the hover tooltip text with the current count, so it always
-// matches whatever number is actually showing on screen
+// fills in the tooltip text with the current count, so it always
+// matches whatever number is actually showing on screen - updates
+// both the desktop and mobile versions, since only one is visible at
+// a time (CSS handles that) but both should stay accurate regardless,
+// in case the window gets resized across that breakpoint
 function updateVisitorTooltip(count) {
-  const tooltip = document.getElementById("visitor-tooltip");
-  if (!tooltip) return;
-
-  tooltip.innerHTML =
+  const message =
     "Congratulations, you're the " + ordinalSuffix(count) + " visitor!<br><br>" +
     "This number is pulled from an Amazon DynamoDB Stream, so if you open up a new page you can see the number update on both.";
+
+  [visitorTooltipEl, visitorTooltipDesktopEl].forEach(function (tooltip) {
+    if (tooltip) {
+      tooltip.innerHTML = message;
+    }
+  });
 }
 
-function connectVisitorCounterViaWebSocket(counterSpan) {
+function connectVisitorCounterViaWebSocket(counterSpans) {
   const socket = new WebSocket(WEBSOCKET_URL);
 
   // this fires whenever DBStreamProcessor pushes an updated count -
@@ -324,7 +349,9 @@ function connectVisitorCounterViaWebSocket(counterSpan) {
   socket.addEventListener("message", function (event) {
     try {
       const data = JSON.parse(event.data);
-      counterSpan.textContent = data.count;
+      counterSpans.forEach(function (span) {
+        span.textContent = data.count;
+      });
       updateVisitorTooltip(data.count);
     } catch (error) {
       console.error("Couldn't read the visitor count message:", error);
@@ -333,7 +360,9 @@ function connectVisitorCounterViaWebSocket(counterSpan) {
 
   socket.addEventListener("error", function (error) {
     console.error("Visitor counter connection error (WebSocket):", error);
-    counterSpan.textContent = "—";
+    counterSpans.forEach(function (span) {
+      span.textContent = "—";
+    });
   });
 
   socket.addEventListener("close", function () {
@@ -346,20 +375,24 @@ function connectVisitorCounterViaWebSocket(counterSpan) {
 }
 
 function initVisitorCounter() {
-  const counterSpan = document.getElementById("visitor-count");
+  const counterSpans = [
+    document.getElementById("visitor-count"),
+    document.getElementById("visitor-count-desktop"),
+  ].filter(Boolean); // drops any that aren't on the page for some reason
 
-  // if for some reason that element isn't on the page, just stop here
-  if (!counterSpan) {
+  if (counterSpans.length === 0) {
     return;
   }
 
   if (isFilledIn(WEBSOCKET_URL)) {
-    connectVisitorCounterViaWebSocket(counterSpan);
+    connectVisitorCounterViaWebSocket(counterSpans);
   } else {
     // WebSocket isn't wired up yet. To bring back the REST fallback
     // instead, uncomment the block above and call
     // updateVisitorCountViaRest(counterSpan) here.
-    counterSpan.textContent = "—";
+    counterSpans.forEach(function (span) {
+      span.textContent = "—";
+    });
   }
 }
 

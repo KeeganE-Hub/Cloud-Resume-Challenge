@@ -86,10 +86,6 @@ body {
   color: var(--text);
   font-family: var(--body-font);
   line-height: 1.6;
-  /* leaves room for the fixed visitor-count bar at the very bottom
-     of the screen, so it never sits on top of the real footer's
-     content */
-  padding-bottom: 2.75rem;
 }
 
 /* lets keyboard users jump past the nav bar straight to the content */
@@ -358,23 +354,56 @@ button:focus-visible {
 /* the little sun/moon button */
 .theme-toggle {
   background: none;
+  border: none;
+  padding: 9px 6px;
+  cursor: pointer;
+}
+
+/* the pill-shaped track behind the sliding thumb */
+.theme-toggle-track {
+  display: block;
+  position: relative;
+  width: 50px;
+  height: 26px;
+  border-radius: 13px;
+  background-color: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
-  /* bumped from 34px to meet the ~44px touch-target size recommended
-     for mobile - a button smaller than this is a common source of
-     mis-taps on phones */
-  width: 44px;
-  height: 44px;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+/* the circle that actually slides - left = dark mode (default),
+   right = light mode. Only "left" is animated here since that's the
+   one property that actually changes between the two states. */
+.theme-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  color: var(--text-muted);
-  transition: color 0.15s ease, border-color 0.15s ease;
+  transition: left 0.25s ease, background-color 0.15s ease;
 }
 
-.theme-toggle:hover {
-  color: var(--accent);
+:root[data-theme="light"] .theme-toggle-thumb {
+  left: 26px; /* track width (50) - thumb width (20) - 2px inset, same as the left position */
+}
+
+.theme-toggle-thumb .theme-icon {
+  width: 13px;
+  height: 13px;
+  /* the icon sits on the solid-orange thumb regardless of theme, so
+     it always needs to read as white here - this overrides the
+     .icon-mono light/dark inversion logic used everywhere else on
+     the page, which assumes the icon sits directly on the page
+     background rather than on its own colored circle */
+  filter: brightness(0) invert(1) !important;
+}
+
+.theme-toggle:hover .theme-toggle-track {
   border-color: var(--accent);
 }
 
@@ -520,13 +549,51 @@ button:focus-visible {
 /* pinned to the bottom of the viewport at all times - body gets
    matching bottom padding further down so this never sits on top of
    real content, like the contact footer's links */
+/* ---------------- desktop visitor counter (original spot, in the hero) ---------------- */
+
+/* hidden on mobile via the media query near the bottom of this file -
+   the fixed bottom bar (.visitor-bar, further down) takes over there
+   instead */
+.visitor-counter-desktop {
+  position: relative;
+  display: inline-block;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+  font-family: var(--mono-font);
+  font-size: 0.781rem;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.visitor-counter-desktop:hover {
+  color: var(--accent);
+}
+
+/* this one opens downward below the text, unlike the mobile footer
+   bar's version which opens upward - makes sense given this sits near
+   the top of the page instead of pinned to the bottom of the screen */
+#visitor-tooltip-desktop {
+  top: calc(100% + 0.5rem);
+  bottom: auto;
+  left: 0;
+  transform: none;
+}
+
+/* ---------------- mobile visitor counter (fixed bottom bar) ---------------- */
+
+/* hidden by default (desktop) - only shown on mobile, see the media
+   query near the bottom of this file. The desktop version above
+   takes over everywhere wider than that. */
 .visitor-bar {
+  display: none;
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 20;
-  display: flex;
   justify-content: center;
   background-color: rgba(13, 20, 32, 0.92);
   border-top: 1px solid var(--border-color);
@@ -938,6 +1005,31 @@ transition line on .cert-card above)
   line-height: 1.6;
 }
 
+.breakdown-diagram-section {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: 2.75rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+/* the diagram itself has a white background - matches the icon-badge
+   style it's based on, which was drawn against white. Framing it in
+   a light card here makes that read as a deliberate choice instead
+   of a stray white rectangle sitting on the page's dark background. */
+.diagram-frame {
+  margin-top: 1.5rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+}
+
+.diagram-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 /* ---------------- small screens ---------------- */
 
 @media (max-width: 860px) {
@@ -947,6 +1039,27 @@ transition line on .cert-card above)
 }
 
 @media (max-width: 640px) {
+  /* swaps the visitor counter from its desktop spot in the hero over
+     to the fixed bottom bar - the hero version would just be one more
+     thing to scroll past on a small screen, and the original problem
+     that led to the bottom bar in the first place was it being easy
+     to miss up there on mobile specifically */
+  .visitor-counter-desktop,
+  #visitor-tooltip-desktop {
+    display: none;
+  }
+
+  .visitor-bar {
+    display: flex;
+  }
+
+  body {
+    /* leaves room for the fixed bar so it never sits on top of the
+       real footer's content - only needed here since the bar itself
+       is only shown at this width */
+    padding-bottom: 2.75rem;
+  }
+
   /* Restructures the top bar into three explicit rows instead of
      letting everything wrap wherever it happens to fit:
        row 1: name + theme toggle (opposite ends)
