@@ -485,7 +485,7 @@
         dashed arrows are reads or the live push back to the browser.
       </p>
       <div class="diagram-frame">
-        <img class="diagram-img" src="images/architecture-diagram.svg" alt="Architecture diagram: Route 53 and CloudFront deliver the static site from S3; a WebSocket API Gateway fronts a Lambda function that writes to a DynamoDB visitor count table and a connections table; a DynamoDB Stream on the count table triggers a second Lambda that pushes live updates back to every open connection; GitHub Actions deploys both the frontend and backend.">
+        <img class="diagram-img" src="images/architecture-diagram.png" alt="Architecture diagram: Route 53 and CloudFront deliver the static site from S3; a WebSocket API Gateway fronts a Lambda function that writes to a DynamoDB visitor count table and a connections table; a DynamoDB Stream on the count table triggers a second Lambda that pushes live updates back to every open connection; GitHub Actions deploys both the frontend and backend.">
       </div>
     </div>
 
