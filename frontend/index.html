@@ -163,7 +163,7 @@
          part of the layout on wider screens - CSS hides whichever
          one doesn't apply to the current screen width. -->
     <button type="button" id="visitor-desktop-toggle" class="visitor-counter-desktop" aria-haspopup="true" aria-expanded="false">
-      Views: <span id="visitor-count-desktop">…</span>
+      Page views: <span id="visitor-count-desktop">…</span>
     </button>
     <div class="visitor-tooltip" id="visitor-tooltip-desktop" hidden>This number is pulled from an Amazon DynamoDB Stream, so if you open up a new page you can see the number update on both.</div>
 
@@ -402,7 +402,7 @@
          so it gets a proper highlight instead of being easy to miss. -->
     <div class="breakdown-visitor-highlight">
       <div class="breakdown-visitor-card">
-        <p class="breakdown-visitor-count">Views: <span id="visitor-count-breakdown">…</span></p>
+        <p class="breakdown-visitor-count">Page views: <span id="visitor-count-breakdown">…</span></p>
         <p class="breakdown-visitor-note">This number updates live, with no page refresh. A DynamoDB Stream fires every time it changes, which triggers a Lambda function that pushes the new value out to every open tab over a WebSocket connection — open this page in two tabs and watch it update in both.</p>
       </div>
     </div>
@@ -523,7 +523,7 @@
      this works the same way on both. -->
 <footer class="visitor-bar" id="visitor-bar">
   <button type="button" id="visitor-bar-toggle" class="visitor-bar-toggle" aria-haspopup="true" aria-expanded="false">
-    Views: <span id="visitor-count">…</span>
+    Page views: <span id="visitor-count">…</span>
   </button>
   <div class="visitor-tooltip" id="visitor-tooltip" hidden>This number is pulled from an Amazon DynamoDB Stream, so if you open up a new page you can see the number update on both.</div>
 </footer>

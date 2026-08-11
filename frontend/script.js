@@ -179,12 +179,12 @@ document.addEventListener("keydown", function (event) {
 // one in the hero, a mobile one in the fixed bottom bar - CSS shows
 // only one at a time depending on screen width), so this is written
 // as a reusable setup function instead of duplicating the same
-// open/close/click-outside/Escape logic twice. Click to toggle, click
-// elsewhere or press Escape to close - this used to be hover-only,
-// but hover isn't really a thing on a phone, so both instances use
-// tap/click, which works the same way on touch and mouse alike.
+// open/close/click-outside/Escape logic twice. Both instances support
+// click/tap; the desktop one also supports hover, since a mouse can
+// do that and there's no reason not to - hover doesn't mean anything
+// on a touchscreen though, so the mobile bar version skips it.
 
-function setupVisitorTooltip(toggleEl, tooltipEl) {
+function setupVisitorTooltip(toggleEl, tooltipEl, enableHover) {
   function open() {
     tooltipEl.hidden = false;
     toggleEl.setAttribute("aria-expanded", "true");
@@ -204,6 +204,11 @@ function setupVisitorTooltip(toggleEl, tooltipEl) {
     }
   });
 
+  if (enableHover) {
+    toggleEl.addEventListener("mouseenter", open);
+    toggleEl.addEventListener("mouseleave", close);
+  }
+
   document.addEventListener("click", function (event) {
     if (!tooltipEl.hidden && !toggleEl.contains(event.target)) {
       close();
@@ -219,11 +224,11 @@ function setupVisitorTooltip(toggleEl, tooltipEl) {
 
 const visitorBarToggle = document.getElementById("visitor-bar-toggle");
 const visitorTooltipEl = document.getElementById("visitor-tooltip");
-setupVisitorTooltip(visitorBarToggle, visitorTooltipEl);
+setupVisitorTooltip(visitorBarToggle, visitorTooltipEl, false);
 
 const visitorDesktopToggle = document.getElementById("visitor-desktop-toggle");
 const visitorTooltipDesktopEl = document.getElementById("visitor-tooltip-desktop");
-setupVisitorTooltip(visitorDesktopToggle, visitorTooltipDesktopEl);
+setupVisitorTooltip(visitorDesktopToggle, visitorTooltipDesktopEl, true);
 
 
 // Theme toggle
@@ -331,7 +336,7 @@ function ordinalSuffix(n) {
 // in case the window gets resized across that breakpoint
 function updateVisitorTooltip(count) {
   const message =
-    "This is the " + ordinalSuffix(count) + " view!<br><br>" +
+    "This is the " + ordinalSuffix(count) + " page view!<br><br>" +
     "This number is pulled from an Amazon DynamoDB Stream, so if you open up a new page you can see the number update on both.";
 
   [visitorTooltipEl, visitorTooltipDesktopEl].forEach(function (tooltip) {
