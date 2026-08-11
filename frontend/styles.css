@@ -576,12 +576,17 @@ button:focus-visible {
 
 /* this one opens downward below the text, unlike the mobile footer
    bar's version which opens upward - makes sense given this sits near
-   the top of the page instead of pinned to the bottom of the screen */
+   the top of the page instead of pinned to the bottom of the screen.
+   !important here is deliberate: this needs to unconditionally win
+   over the shared .visitor-tooltip base positioning (which is written
+   for the mobile bar's upward-opening case), not just out-specificity
+   it - this was intermittently losing that override somehow, and
+   these four properties are narrow/safe enough to force. */
 #visitor-tooltip-desktop {
-  top: calc(100% + 0.5rem);
-  bottom: auto;
-  left: 0;
-  transform: none;
+  top: calc(100% + 0.5rem) !important;
+  bottom: auto !important;
+  left: 0 !important;
+  transform: none !important;
 }
 
 /* ---------------- mobile visitor counter (fixed bottom bar) ---------------- */
