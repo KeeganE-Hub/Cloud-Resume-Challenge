@@ -556,13 +556,21 @@ button:focus-visible {
 /* hidden on mobile via the media query near the bottom of this file -
    the fixed bottom bar (.visitor-bar, further down) takes over there
    instead */
-.visitor-counter-desktop {
+/* the wrapper (not the button itself) is what needs position:relative
+   now - it's the common ancestor of both the button and the tooltip,
+   which is what actually makes the tooltip's position:absolute anchor
+   correctly. See the HTML comment above this element for why that
+   matters. */
+.visitor-counter-wrap {
   position: relative;
   display: inline-block;
+  margin: 0.5rem 0 0;
+}
+
+.visitor-counter-desktop {
   background: none;
   border: none;
   padding: 0;
-  margin: 0.5rem 0 0;
   font-family: var(--mono-font);
   font-size: 0.781rem;
   color: var(--text-faint);
@@ -1076,8 +1084,7 @@ transition line on .cert-card above)
      thing to scroll past on a small screen, and the original problem
      that led to the bottom bar in the first place was it being easy
      to miss up there on mobile specifically */
-  .visitor-counter-desktop,
-  #visitor-tooltip-desktop {
+  .visitor-counter-wrap {
     display: none;
   }
 

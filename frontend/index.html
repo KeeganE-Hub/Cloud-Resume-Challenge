@@ -162,10 +162,17 @@
          separate element so it can live in a completely different
          part of the layout on wider screens - CSS hides whichever
          one doesn't apply to the current screen width. -->
-    <button type="button" id="visitor-desktop-toggle" class="visitor-counter-desktop" aria-haspopup="true" aria-expanded="false">
-      Page views: <span id="visitor-count-desktop">…</span>
-    </button>
-    <div class="visitor-tooltip" id="visitor-tooltip-desktop" hidden>This number is pulled from an Amazon DynamoDB Stream, so if you open up a new page you can see the number update on both.</div>
+    <!-- wrapped together (not just sitting as loose siblings) so the
+         tooltip's position:absolute below actually anchors to this
+         button - a positioned element without a positioned ancestor
+         falls back to positioning against the whole page instead,
+         which is what was causing it to render way down the page -->
+    <div class="visitor-counter-wrap">
+      <button type="button" id="visitor-desktop-toggle" class="visitor-counter-desktop" aria-haspopup="true" aria-expanded="false">
+        Page views: <span id="visitor-count-desktop">…</span>
+      </button>
+      <div class="visitor-tooltip" id="visitor-tooltip-desktop" hidden>This number is pulled from an Amazon DynamoDB Stream, so if you open up a new page you can see the number update on both.</div>
+    </div>
 
   </section>
 
