@@ -331,7 +331,7 @@ function ordinalSuffix(n) {
 // in case the window gets resized across that breakpoint
 function updateVisitorTooltip(count) {
   const message =
-    "Congratulations, you're the " + ordinalSuffix(count) + " visitor!<br><br>" +
+    "This is the " + ordinalSuffix(count) + " view!<br><br>" +
     "This number is pulled from an Amazon DynamoDB Stream, so if you open up a new page you can see the number update on both.";
 
   [visitorTooltipEl, visitorTooltipDesktopEl].forEach(function (tooltip) {

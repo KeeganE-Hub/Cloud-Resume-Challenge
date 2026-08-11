@@ -576,12 +576,33 @@ button:focus-visible {
 
 /* this one opens downward below the text, unlike the mobile footer
    bar's version which opens upward - makes sense given this sits near
-   the top of the page instead of pinned to the bottom of the screen */
+   the top of the page instead of pinned to the bottom of the screen.
+
+   Also the one place hover still works, alongside the click/tap
+   toggle - a mouse can hover, so there's no reason not to support
+   both here. The mobile bar version stays click/tap-only since hover
+   doesn't really mean anything on a touchscreen. Making both triggers
+   coexist means this can't just rely on the "hidden" attribute (which
+   forces display:none via the shared .visitor-tooltip[hidden] rule
+   below) - opacity/visibility do the actual showing/hiding instead,
+   so either trigger can reveal it independently of the other. */
 #visitor-tooltip-desktop {
   top: calc(100% + 0.5rem);
   bottom: auto;
   left: 0;
   transform: none;
+  display: block !important;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+#visitor-tooltip-desktop:not([hidden]),
+.visitor-counter-desktop:hover + #visitor-tooltip-desktop {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 /* ---------------- mobile visitor counter (fixed bottom bar) ---------------- */
